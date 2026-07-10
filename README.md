@@ -36,12 +36,36 @@ pnpm check
 
 ## Adding locations
 
-See [the location format](src/locations/README.md) and
-[the contribution guide](CONTRIBUTING.md). A location is discovered
-automatically when its directory is added; there is no central manifest to
-update.
+You do not need permission to propose a location. The short version is:
+
+1. Fork this repository and create a branch.
+2. Add a kebab-case directory under `src/locations/`.
+3. Put `question.webp` and `location.json` in that directory.
+4. Run `pnpm check`.
+5. Open a pull request for review.
+
+```text
+src/locations/radiant-secret-shop/
+  location.json
+  question.webp
+```
+
+The Easy image is the full submitted scene. RooGuessr derives the Medium and
+Hard crops from it automatically, and it discovers location directories without
+a central manifest to update.
+
+Read [the location format](src/locations/README.md) for the metadata schema and
+[the contribution guide](CONTRIBUTING.md) for capture and review expectations.
 
 ## Deployment
 
 Merges to `main` are built and deployed automatically with GitHub Actions. The
 production site is configured for `https://rooguessr.peasantroad.com`.
+
+## License and Dota content
+
+The original RooGuessr code is available under the [MIT License](LICENSE).
+RooGuessr does not own Dota, Dota 2, or their screenshots, map imagery, names,
+logos, artwork, or other game content. Those materials belong to Valve
+Corporation and their respective rights holders and are not covered by the MIT
+License. RooGuessr is an unofficial community fan project.

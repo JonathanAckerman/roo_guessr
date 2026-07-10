@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Dota content notice
+
+The MIT License above applies only to the original RooGuessr source code and
+documentation. RooGuessr does not own Dota, Dota 2, or any associated names,
+screenshots, map imagery, logos, artwork, or other game content. Those materials
+remain the property of Valve Corporation and their respective rights holders
+and are not licensed under the MIT License by this repository.
+
+RooGuessr is an unofficial community fan project and is not affiliated with or
+endorsed by Valve Corporation.
