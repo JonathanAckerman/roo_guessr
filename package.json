@@ -1,0 +1,20 @@
+{
+  "name": "rooguessr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "validate:locations": "node scripts/validate-locations.mjs",
+    "check": "pnpm validate:locations && pnpm build"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "8.0.13"
+  }
+}
