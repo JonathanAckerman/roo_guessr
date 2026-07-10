@@ -1,12 +1,11 @@
 # RooGuessr
 
-RooGuessr is a Dota map-location guessing game. Players study a tightly cropped
-scene, place a pin on the full map, and score points based on the distance from
-the real location.
+RooGuessr is a Dota map-location guessing game. Study the cropped
+image, place a pin on the full map to guess its location, then score points based on the distance from
+the actual location.
 
 The game is designed as a community-curated public project. Contributors can
-submit new locations through pull requests while the repository owner retains
-control over everything that reaches the live site.
+submit new locations through pull requests.
 
 ## Planned game loop
 
