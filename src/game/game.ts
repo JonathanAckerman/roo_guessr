@@ -125,7 +125,7 @@ export function renderGame(
           <article class="game-card">
             <div class="game-card__heading">
               <span>Place your pin</span>
-              <span data-map-status>Click anywhere on the map</span>
+              <span data-map-status></span>
             </div>
             <div class="game-map-wrap" data-game-map>
               <img class="game-map" src="${mapUrl}" alt="Dota map" draggable="false" />

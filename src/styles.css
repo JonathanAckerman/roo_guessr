@@ -508,11 +508,8 @@ h2 {
 
 .game-controls__actions {
   width: 120px;
+  grid-column: 2;
   justify-self: center;
-}
-
-.game-result[hidden] + .game-controls__actions {
-  grid-column: 1 / -1;
 }
 
 .game-controls__actions .start-button {
@@ -612,15 +609,6 @@ h2 {
   display: flex;
   gap: 12px;
   justify-content: center;
-}
-
-.editor-shell {
-  width: min(1480px, calc(100% - 40px));
-  margin: 0 auto;
-}
-
-.editor-header {
-  min-height: 78px;
 }
 
 .editor-intro {
@@ -1017,10 +1005,6 @@ button.tool-button:disabled {
 
   .game-final__actions {
     display: grid;
-  }
-
-  .editor-shell {
-    width: min(100% - 24px, 1480px);
   }
 
   .editor-save-panel {

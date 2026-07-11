@@ -109,13 +109,12 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   let cropGrabY = QUESTION_HEIGHT / 2;
 
   app.innerHTML = `
-    <main class="editor-shell">
+    <main class="site-shell editor-shell">
       <header class="site-header editor-header">
         <a class="wordmark" href="/" aria-label="RooGuessr home">
           <span class="wordmark__pin" aria-hidden="true"></span>
           <span>RooGuessr</span>
         </a>
-        <a class="tool-button" href="/">Back to game</a>
       </header>
 
       <section class="editor-intro" aria-labelledby="editor-title">
