@@ -13,7 +13,9 @@ Thanks for helping expand the RooGuessr location pool.
 
 Maintainers can place new WebP captures in `src/assets/questions/`, run
 `pnpm dev`, and use **Edit answers** to create the final location directory and
-`answer.txt` file.
+`answer.txt` file. The picker compares local questions with `origin/main` and
+shows only work that has not been published there. Published locations cannot
+be edited through the authoring page.
 
 Please use consistent Dota graphics and camera settings. Hide the HUD, minimap,
 cursor, heroes, particles, and other temporary clues. The Easy crop should be

@@ -51,10 +51,17 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       </section>
 
       <section class="editor-toolbar" aria-label="Question selection">
-        <label for="question-select">Question image</label>
-        <select id="question-select" data-question-select disabled>
-          <option>Loading questions…</option>
-        </select>
+        <label for="question-search">Question image</label>
+        <input
+          id="question-search"
+          type="search"
+          list="question-options"
+          data-question-search
+          placeholder="Search new questions by name…"
+          autocomplete="off"
+          disabled
+        />
+        <datalist id="question-options" data-question-options></datalist>
         <label for="location-id">Location ID</label>
         <input id="location-id" data-location-id pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="radiant-secret-shop" disabled />
       </section>
@@ -78,7 +85,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           </div>
           <div class="editor-question-wrap">
             <img class="editor-question" alt="Selected RooGuessr question" hidden />
-            <p class="editor-empty" data-question-empty>Select a staged or existing question.</p>
+            <p class="editor-empty" data-question-empty>Search for a new local question.</p>
           </div>
         </article>
       </section>
@@ -99,7 +106,8 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     </main>
   `;
 
-  const select = app.querySelector<HTMLSelectElement>("[data-question-select]");
+  const searchInput = app.querySelector<HTMLInputElement>("[data-question-search]");
+  const questionOptions = app.querySelector<HTMLDataListElement>("[data-question-options]");
   const idInput = app.querySelector<HTMLInputElement>("[data-location-id]");
   const map = app.querySelector<HTMLImageElement>(".editor-map");
   const pin = app.querySelector<HTMLDivElement>(".editor-pin");
@@ -110,7 +118,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const status = app.querySelector<HTMLElement>("[data-editor-status]");
   const saveButton = app.querySelector<HTMLButtonElement>("[data-save-answer]");
 
-  if (!select || !idInput || !map || !pin || !questionImage || !questionEmpty || !coordinateLabel || !answerText || !status || !saveButton) {
+  if (!searchInput || !questionOptions || !idInput || !map || !pin || !questionImage || !questionEmpty || !coordinateLabel || !answerText || !status || !saveButton) {
     throw new Error("RooGuessr answer editor could not initialize.");
   }
 
@@ -156,7 +164,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     updatePin(question.answer ?? undefined);
     status.textContent = question.sourceKind === "staged"
       ? "Saving will create the location folder, move this image, and write answer.txt."
-      : "Saving will update this location's answer.txt file.";
+      : "This location is not yet on origin/main; saving will update its answer.txt file.";
   };
 
   const loadQuestions = async (preferredId?: string): Promise<void> => {
@@ -166,30 +174,42 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       const payload = await response.json() as QuestionListResponse;
       questions = payload.questions;
 
-      select.innerHTML = questions.length > 0
-        ? questions.map((question, index) => `<option value="${index}">${question.label}</option>`).join("")
-        : "<option>No questions available</option>";
-      select.disabled = questions.length === 0;
+      questionOptions.replaceChildren(...questions.map((question) => {
+        const option = document.createElement("option");
+        option.value = question.label;
+        return option;
+      }));
+      searchInput.disabled = questions.length === 0;
 
-      const preferredIndex = preferredId ? questions.findIndex((question) => question.id === preferredId) : -1;
-      const selectedIndex = preferredIndex >= 0 ? preferredIndex : 0;
-      select.value = String(selectedIndex);
-      selectQuestion(questions[selectedIndex]);
+      const preferredQuestion = preferredId ? questions.find((question) => question.id === preferredId) : undefined;
+      searchInput.value = preferredQuestion?.label ?? "";
+      selectQuestion(preferredQuestion);
 
       if (questions.length === 0) {
-        status.textContent = "Add a WebP capture to src/assets/questions/ to begin.";
+        searchInput.placeholder = "No new local questions found";
+        status.textContent = "Only captures and locations that do not exist on origin/main appear here.";
+      } else {
+        searchInput.placeholder = "Search new questions by name…";
+        status.textContent = "Search by filename to choose a question that is not yet on origin/main.";
       }
     } catch {
-      select.innerHTML = "<option>Run pnpm dev locally</option>";
-      select.disabled = true;
+      questionOptions.innerHTML = "";
+      searchInput.value = "";
+      searchInput.placeholder = "Run pnpm dev locally";
+      searchInput.disabled = true;
       status.textContent = "Saving files is available only from the local development server. Run pnpm dev, then reopen this page.";
       selectQuestion(undefined);
     }
   };
 
-  select.addEventListener("change", () => {
-    selectQuestion(questions[Number(select.value)]);
-  });
+  const selectMatchingQuestion = (): void => {
+    const search = searchInput.value.trim().toLocaleLowerCase();
+    const question = questions.find((candidate) => candidate.label.toLocaleLowerCase() === search);
+    selectQuestion(question);
+  };
+
+  searchInput.addEventListener("input", selectMatchingQuestion);
+  searchInput.addEventListener("change", selectMatchingQuestion);
 
   idInput.addEventListener("input", updateSaveState);
 

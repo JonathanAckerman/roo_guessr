@@ -1,13 +1,17 @@
 import { copyFile, mkdir, readFile, readdir, rm, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFile } from "node:child_process";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { promisify } from "node:util";
 import type { Plugin } from "vite";
 
 const workspaceRoot = fileURLToPath(new URL("../", import.meta.url));
 const stagedQuestionsDirectory = resolve(workspaceRoot, "src/assets/questions");
 const locationsDirectory = resolve(workspaceRoot, "src/locations");
 const idPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const execFileAsync = promisify(execFile);
+const repositoryReference = "origin/main";
 
 interface AnswerPoint {
   x: number;
@@ -19,6 +23,15 @@ interface SaveRequest {
   sourceName: string;
   id: string;
   answer: AnswerPoint;
+}
+
+interface EditableQuestion {
+  sourceKind: "staged" | "location";
+  sourceName: string;
+  id: string;
+  answer: AnswerPoint | null;
+  label: string;
+  imageUrl: string;
 }
 
 function sendJson(response: ServerResponse, status: number, value: unknown): void {
@@ -78,19 +91,50 @@ function assertInside(parent: string, child: string): void {
   }
 }
 
-async function listQuestions(): Promise<unknown[]> {
-  const questions: unknown[] = [];
+function repositoryPath(path: string): string {
+  return path.slice(workspaceRoot.length).replace(/^[/\\]/, "").replaceAll("\\", "/");
+}
+
+async function refreshRepositorySnapshot(): Promise<void> {
+  try {
+    await execFileAsync("git", ["fetch", "--quiet", "origin", "+refs/heads/main:refs/remotes/origin/main"], {
+      cwd: workspaceRoot,
+      windowsHide: true,
+    });
+  } catch (error) {
+    throw new Error("RooGuessr could not refresh origin/main before editing answers.", { cause: error });
+  }
+}
+
+async function existsOnRepository(path: string): Promise<boolean> {
+  try {
+    await execFileAsync("git", ["cat-file", "-e", `${repositoryReference}:${repositoryPath(path)}`], {
+      cwd: workspaceRoot,
+      windowsHide: true,
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === 128) return false;
+    throw new Error("RooGuessr could not compare the question with origin/main.", { cause: error });
+  }
+}
+
+async function listQuestions(): Promise<EditableQuestion[]> {
+  await refreshRepositorySnapshot();
+  const questions: EditableQuestion[] = [];
 
   const stagedEntries = await readdir(stagedQuestionsDirectory, { withFileTypes: true });
   for (const entry of stagedEntries) {
     if (!entry.isFile() || extname(entry.name).toLowerCase() !== ".webp") continue;
+    const questionPath = resolve(stagedQuestionsDirectory, entry.name);
+    if (await existsOnRepository(questionPath)) continue;
     const id = basename(entry.name, extname(entry.name));
     questions.push({
       sourceKind: "staged",
       sourceName: entry.name,
       id,
       answer: null,
-      label: `${id} (staged)`,
+      label: id,
       imageUrl: `/__rooguessr/question-image?sourceKind=staged&sourceName=${encodeURIComponent(entry.name)}`,
     });
   }
@@ -101,6 +145,7 @@ async function listQuestions(): Promise<unknown[]> {
     const directory = resolve(locationsDirectory, entry.name);
     const questionPath = join(directory, "question.webp");
     if (!(await fileExists(questionPath))) continue;
+    if (await existsOnRepository(questionPath)) continue;
 
     let answer: AnswerPoint | undefined;
     try {
@@ -119,12 +164,7 @@ async function listQuestions(): Promise<unknown[]> {
     });
   }
 
-  return questions.sort((left, right) => {
-    const a = left as { sourceKind: string; label: string };
-    const b = right as { sourceKind: string; label: string };
-    if (a.sourceKind !== b.sourceKind) return a.sourceKind === "staged" ? -1 : 1;
-    return a.label.localeCompare(b.label);
-  });
+  return questions.sort((left, right) => left.label.localeCompare(right.label));
 }
 
 async function imagePath(sourceKind: string | null, sourceName: string | null): Promise<string> {
@@ -136,12 +176,14 @@ async function imagePath(sourceKind: string | null, sourceName: string | null): 
     }
     const path = resolve(stagedQuestionsDirectory, sourceName);
     assertInside(stagedQuestionsDirectory, path);
+    if (await existsOnRepository(path)) throw new Error("Questions already on origin/main are read-only.");
     return path;
   }
 
   if (sourceKind === "location" && idPattern.test(sourceName)) {
     const path = resolve(locationsDirectory, sourceName, "question.webp");
     assertInside(locationsDirectory, path);
+    if (await existsOnRepository(path)) throw new Error("Questions already on origin/main are read-only.");
     return path;
   }
 
@@ -149,6 +191,7 @@ async function imagePath(sourceKind: string | null, sourceName: string | null): 
 }
 
 async function saveAnswer(payload: SaveRequest): Promise<{ directory: string }> {
+  await refreshRepositorySnapshot();
   const id = payload.id.trim();
   if (!idPattern.test(id)) throw new Error("Location IDs must use lowercase kebab-case.");
   if (!validAnswer(payload.answer)) throw new Error("The answer must contain normalized X and Y coordinates.");
@@ -158,9 +201,10 @@ async function saveAnswer(payload: SaveRequest): Promise<{ directory: string }> 
   if (payload.sourceKind === "staged") {
     const sourcePath = await imagePath("staged", payload.sourceName);
     const destination = resolve(locationsDirectory, id);
+    const destinationQuestion = join(destination, "question.webp");
     assertInside(locationsDirectory, destination);
 
-    if (await fileExists(destination)) {
+    if (await fileExists(destination) || await existsOnRepository(destinationQuestion)) {
       throw new Error(`A location named '${id}' already exists.`);
     }
 
@@ -179,9 +223,11 @@ async function saveAnswer(payload: SaveRequest): Promise<{ directory: string }> 
     }
     const destination = resolve(locationsDirectory, id);
     assertInside(locationsDirectory, destination);
-    if (!(await fileExists(join(destination, "question.webp")))) {
+    const questionPath = join(destination, "question.webp");
+    if (!(await fileExists(questionPath))) {
       throw new Error(`Location '${id}' does not contain question.webp.`);
     }
+    if (await existsOnRepository(questionPath)) throw new Error("Questions already on origin/main are read-only.");
     await writeFile(join(destination, "answer.txt"), answerText, "utf8");
   } else {
     throw new Error("Invalid question source.");

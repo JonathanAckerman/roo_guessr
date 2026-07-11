@@ -34,6 +34,9 @@ function difficultyButton(difficulty: Difficulty): string {
 
 function render(): void {
   const canStart = locations.length > 0;
+  const editorLink = import.meta.env.DEV
+    ? '<a class="tool-button" href="?tool=answers">Edit answers</a>'
+    : "";
 
   app.innerHTML = `
     <main class="site-shell">
@@ -44,7 +47,7 @@ function render(): void {
         </a>
         <div class="site-header__actions">
           <span class="location-count">${locations.length} curated ${locations.length === 1 ? "location" : "locations"}</span>
-          <a class="tool-button" href="?tool=answers">Edit answers</a>
+          ${editorLink}
         </div>
       </header>
 
@@ -104,7 +107,7 @@ function render(): void {
   });
 }
 
-if (new URLSearchParams(window.location.search).get("tool") === "answers") {
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("tool") === "answers") {
   renderAnswerEditor(app, mapUrl);
 } else {
   render();

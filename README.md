@@ -62,6 +62,11 @@ Run `pnpm dev`, then choose **Edit answers** from the main page. The authoring
 page shows the master map and selected question side-by-side. Left-click the
 map to place the answer pin, then save it directly to `answer.txt`.
 
+The searchable question picker deliberately includes only captures and
+locations that do not exist on `origin/main`. The editor refreshes that remote
+branch before listing or saving questions. Once a location is published there,
+the editor treats it as read-only and removes it from the list.
+
 Saving a staged image creates its `src/locations/<id>/` directory and moves the
 image into it as `question.webp`. Browsers cannot modify a Git checkout from the
 deployed website, so saving is available only through the local development
