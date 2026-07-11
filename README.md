@@ -40,7 +40,7 @@ You do not need permission to propose a location. The short version is:
 1. Fork this repository and create a branch.
 2. Open **Edit answers** on the RooGuessr website.
 3. Choose a screenshot, mark its map position, and download the location ZIP.
-4. Extract the UUID folder from the ZIP into `src/locations/`.
+4. Create `src/locations/<zip-name>/` and extract the ZIP's two files into it.
 5. Open a pull request for review. GitHub Actions validates the location.
 
 ```text
@@ -59,13 +59,15 @@ Read [the location format](src/locations/README.md) for the coordinate format an
 ## Building a location
 
 Choose **Edit answers** on the RooGuessr website and select a PNG, JPG, or WebP
-screenshot. The tool center-crops it to 7:5, converts it to a 1400×1000 WebP,
-and previews the final `question.webp`. Left-click the correct point on the map,
-then download the generated location ZIP.
+screenshot that is at least 1400×1000. Drag the crop box to choose the exact
+1400×1000 `question.webp`, left-click the correct point on the map, then download
+the generated location ZIP.
 
-The ZIP contains a UUID-named folder with `question.webp` and `answer.txt`, ready
-to extract into `src/locations/`. Everything runs in the browser: the source
-image is not uploaded, and building a location does not require Node.js or pnpm.
+The ZIP's UUID filename is the location ID, and `question.webp` plus `answer.txt`
+sit directly at the archive root. Create a folder with that UUID under
+`src/locations/` and extract the files into it. Everything runs in the browser:
+the source image is not uploaded, and building a location does not require
+Node.js or pnpm.
 
 ## Deployment
 

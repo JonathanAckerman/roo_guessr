@@ -3,9 +3,24 @@ import type { NormalizedPoint } from "./game/locations";
 
 const QUESTION_WIDTH = 1400;
 const QUESTION_HEIGHT = 1000;
+const CROP_PREVIEW_WIDTH = 700;
+const CROP_PREVIEW_HEIGHT = 500;
+
+interface SourceImage {
+  image: HTMLImageElement;
+  url: string;
+  width: number;
+  height: number;
+  cropX: number;
+  cropY: number;
+}
 
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
+}
+
+function clampBetween(value: number, minimum: number, maximum: number): number {
+  return Math.max(minimum, Math.min(maximum, value));
 }
 
 function roundedPoint(point: NormalizedPoint): NormalizedPoint {
@@ -19,58 +34,60 @@ function formatAnswer(answer: NormalizedPoint): string {
   return `${answer.x.toFixed(4)}, ${answer.y.toFixed(4)}`;
 }
 
-async function convertToQuestionWebp(file: File): Promise<Blob> {
-  const sourceUrl = URL.createObjectURL(file);
+async function loadSourceImage(file: File): Promise<SourceImage> {
+  const url = URL.createObjectURL(file);
   const image = new Image();
-  image.src = sourceUrl;
+  image.src = url;
 
   try {
     await image.decode();
-
-    const targetRatio = QUESTION_WIDTH / QUESTION_HEIGHT;
-    const sourceRatio = image.naturalWidth / image.naturalHeight;
-    let sourceX = 0;
-    let sourceY = 0;
-    let sourceWidth = image.naturalWidth;
-    let sourceHeight = image.naturalHeight;
-
-    if (sourceRatio > targetRatio) {
-      sourceWidth = sourceHeight * targetRatio;
-      sourceX = (image.naturalWidth - sourceWidth) / 2;
-    } else {
-      sourceHeight = sourceWidth / targetRatio;
-      sourceY = (image.naturalHeight - sourceHeight) / 2;
-    }
-
-    const canvas = document.createElement("canvas");
-    canvas.width = QUESTION_WIDTH;
-    canvas.height = QUESTION_HEIGHT;
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("This browser could not prepare the question image.");
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = "high";
-
-    context.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      QUESTION_WIDTH,
-      QUESTION_HEIGHT,
-    );
-
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.9));
-    if (!blob || blob.type !== "image/webp") {
-      throw new Error("This browser could not convert the image to WebP.");
-    }
-
-    return blob;
-  } finally {
-    URL.revokeObjectURL(sourceUrl);
+  } catch {
+    URL.revokeObjectURL(url);
+    throw new Error("The selected file could not be read as an image.");
   }
+
+  const width = image.naturalWidth;
+  const height = image.naturalHeight;
+  if (width < QUESTION_WIDTH || height < QUESTION_HEIGHT) {
+    URL.revokeObjectURL(url);
+    throw new Error(`Image is ${width}×${height}. Source images must be at least ${QUESTION_WIDTH}×${QUESTION_HEIGHT}.`);
+  }
+
+  return {
+    image,
+    url,
+    width,
+    height,
+    cropX: Math.floor((width - QUESTION_WIDTH) / 2),
+    cropY: Math.floor((height - QUESTION_HEIGHT) / 2),
+  };
+}
+
+async function cropToQuestionWebp(source: SourceImage): Promise<Blob> {
+  const canvas = document.createElement("canvas");
+  canvas.width = QUESTION_WIDTH;
+  canvas.height = QUESTION_HEIGHT;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("This browser could not prepare the question image.");
+
+  context.drawImage(
+    source.image,
+    source.cropX,
+    source.cropY,
+    QUESTION_WIDTH,
+    QUESTION_HEIGHT,
+    0,
+    0,
+    QUESTION_WIDTH,
+    QUESTION_HEIGHT,
+  );
+
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.9));
+  if (!blob || blob.type !== "image/webp") {
+    throw new Error("This browser could not convert the crop to WebP.");
+  }
+
+  return blob;
 }
 
 function downloadBlob(blob: Blob, filename: string): void {
@@ -83,11 +100,13 @@ function downloadBlob(blob: Blob, filename: string): void {
 }
 
 export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
-  let questionBlob: Blob | undefined;
-  let questionUrl: string | undefined;
+  let sourceImage: SourceImage | undefined;
   let locationId: string | undefined;
   let answer: NormalizedPoint | undefined;
   let selectionVersion = 0;
+  let cropDragging = false;
+  let cropGrabX = QUESTION_WIDTH / 2;
+  let cropGrabY = QUESTION_HEIGHT / 2;
 
   app.innerHTML = `
     <main class="editor-shell">
@@ -105,8 +124,8 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           <h1 id="editor-title">Build a location.</h1>
         </div>
         <p>
-          Choose a screenshot, mark its location, and download a ready-to-commit
-          RooGuessr folder. Coordinates use <strong>(0, 0)</strong> at the bottom-left.
+          Choose a screenshot, select its ${QUESTION_WIDTH}×${QUESTION_HEIGHT} crop, mark its location,
+          and download a ready-to-commit ZIP. Coordinates use <strong>(0, 0)</strong> at the bottom-left.
         </p>
       </section>
 
@@ -134,13 +153,22 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
 
         <article class="editor-card">
           <div class="editor-card__heading">
-            <span>Final question.webp</span>
+            <span>Question crop</span>
             <span data-question-name>${QUESTION_WIDTH}×${QUESTION_HEIGHT}</span>
           </div>
           <div class="editor-question-wrap">
-            <img class="editor-question" alt="Converted RooGuessr question" hidden />
+            <canvas
+              class="editor-crop-canvas"
+              width="${CROP_PREVIEW_WIDTH}"
+              height="${CROP_PREVIEW_HEIGHT}"
+              role="img"
+              aria-label="Question crop selector"
+              data-crop-canvas
+              hidden
+            ></canvas>
             <p class="editor-empty" data-question-empty>Choose a PNG, JPG, or WebP image from your computer.</p>
           </div>
+          <p class="editor-crop-note" data-crop-note hidden>Drag the 1400×1000 box to choose the exported crop.</p>
         </article>
       </section>
 
@@ -158,7 +186,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       </section>
 
       <footer>
-        <span>Extract the downloaded UUID folder into <code>src/locations/</code>.</span>
+        <span>Extract the ZIP contents into <code>src/locations/&lt;zip-name&gt;/</code>.</span>
         <a class="editor-footer-link" href="/">Back to RooGuessr</a>
       </footer>
     </main>
@@ -167,7 +195,8 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const fileInput = app.querySelector<HTMLInputElement>("[data-question-file]");
   const map = app.querySelector<HTMLImageElement>(".editor-map");
   const pin = app.querySelector<HTMLDivElement>(".editor-pin");
-  const questionImage = app.querySelector<HTMLImageElement>(".editor-question");
+  const cropCanvas = app.querySelector<HTMLCanvasElement>("[data-crop-canvas]");
+  const cropNote = app.querySelector<HTMLElement>("[data-crop-note]");
   const questionEmpty = app.querySelector<HTMLElement>("[data-question-empty]");
   const questionName = app.querySelector<HTMLElement>("[data-question-name]");
   const coordinateLabel = app.querySelector<HTMLElement>("[data-coordinate-label]");
@@ -177,12 +206,17 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const copyButton = app.querySelector<HTMLButtonElement>("[data-copy-answer]");
   const downloadButton = app.querySelector<HTMLButtonElement>("[data-download-location]");
 
-  if (!fileInput || !map || !pin || !questionImage || !questionEmpty || !questionName || !coordinateLabel || !locationIdText || !answerText || !status || !copyButton || !downloadButton) {
+  if (!fileInput || !map || !pin || !cropCanvas || !cropNote || !questionEmpty || !questionName || !coordinateLabel || !locationIdText || !answerText || !status || !copyButton || !downloadButton) {
     throw new Error("RooGuessr location builder could not initialize.");
   }
 
+  const setStatus = (message: string, error = false): void => {
+    status.textContent = message;
+    status.classList.toggle("editor-status--error", error);
+  };
+
   const updateActionState = (): void => {
-    const ready = Boolean(questionBlob && locationId && answer);
+    const ready = Boolean(sourceImage && locationId && answer);
     copyButton.disabled = !ready;
     downloadButton.disabled = !ready;
   };
@@ -204,13 +238,79 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     updateActionState();
   };
 
+  const previewMetrics = (source: SourceImage): {
+    scale: number;
+    imageX: number;
+    imageY: number;
+    imageWidth: number;
+    imageHeight: number;
+  } => {
+    const scale = Math.min(cropCanvas.width / source.width, cropCanvas.height / source.height);
+    const imageWidth = source.width * scale;
+    const imageHeight = source.height * scale;
+    return {
+      scale,
+      imageX: (cropCanvas.width - imageWidth) / 2,
+      imageY: (cropCanvas.height - imageHeight) / 2,
+      imageWidth,
+      imageHeight,
+    };
+  };
+
+  const drawCropPreview = (): void => {
+    if (!sourceImage) return;
+    const context = cropCanvas.getContext("2d");
+    if (!context) return;
+    const metrics = previewMetrics(sourceImage);
+    const cropLeft = metrics.imageX + sourceImage.cropX * metrics.scale;
+    const cropTop = metrics.imageY + sourceImage.cropY * metrics.scale;
+    const cropWidth = QUESTION_WIDTH * metrics.scale;
+    const cropHeight = QUESTION_HEIGHT * metrics.scale;
+
+    context.fillStyle = "#050a08";
+    context.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+    context.drawImage(
+      sourceImage.image,
+      metrics.imageX,
+      metrics.imageY,
+      metrics.imageWidth,
+      metrics.imageHeight,
+    );
+    context.fillStyle = "rgba(0, 0, 0, 0.62)";
+    context.fillRect(metrics.imageX, metrics.imageY, metrics.imageWidth, metrics.imageHeight);
+    context.drawImage(
+      sourceImage.image,
+      sourceImage.cropX,
+      sourceImage.cropY,
+      QUESTION_WIDTH,
+      QUESTION_HEIGHT,
+      cropLeft,
+      cropTop,
+      cropWidth,
+      cropHeight,
+    );
+    context.strokeStyle = "#ffe0c0";
+    context.lineWidth = 3;
+    context.strokeRect(cropLeft + 1.5, cropTop + 1.5, cropWidth - 3, cropHeight - 3);
+  };
+
+  const setCrop = (x: number, y: number): void => {
+    if (!sourceImage) return;
+    sourceImage.cropX = Math.round(clampBetween(x, 0, sourceImage.width - QUESTION_WIDTH));
+    sourceImage.cropY = Math.round(clampBetween(y, 0, sourceImage.height - QUESTION_HEIGHT));
+    cropNote.textContent = sourceImage.width === QUESTION_WIDTH && sourceImage.height === QUESTION_HEIGHT
+      ? "This image already matches the 1400×1000 crop."
+      : `Drag the 1400×1000 box to choose the exported crop. Offset: ${sourceImage.cropX}px left, ${sourceImage.cropY}px top.`;
+    drawCropPreview();
+  };
+
   const clearQuestion = (): void => {
-    if (questionUrl) URL.revokeObjectURL(questionUrl);
-    questionBlob = undefined;
-    questionUrl = undefined;
+    if (sourceImage) URL.revokeObjectURL(sourceImage.url);
+    sourceImage = undefined;
     locationId = undefined;
-    questionImage.removeAttribute("src");
-    questionImage.hidden = true;
+    cropDragging = false;
+    cropCanvas.hidden = true;
+    cropNote.hidden = true;
     questionEmpty.hidden = false;
     questionName.textContent = `${QUESTION_WIDTH}×${QUESTION_HEIGHT}`;
     locationIdText.textContent = "—";
@@ -221,28 +321,52 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     const version = ++selectionVersion;
     clearQuestion();
     fileInput.disabled = true;
-    status.textContent = "Converting to WebP…";
+    setStatus("Reading image…");
 
     try {
-      const convertedBlob = await convertToQuestionWebp(file);
-      if (version !== selectionVersion) return;
+      const loadedImage = await loadSourceImage(file);
+      if (version !== selectionVersion) {
+        URL.revokeObjectURL(loadedImage.url);
+        return;
+      }
 
-      questionBlob = convertedBlob;
-      questionUrl = URL.createObjectURL(convertedBlob);
+      sourceImage = loadedImage;
       locationId = crypto.randomUUID();
-      questionImage.src = questionUrl;
-      questionImage.hidden = false;
+      cropCanvas.hidden = false;
+      cropNote.hidden = false;
       questionEmpty.hidden = true;
-      questionName.textContent = `${file.name} → ${QUESTION_WIDTH}×${QUESTION_HEIGHT} WebP`;
+      questionName.textContent = `${file.name} · ${sourceImage.width}×${sourceImage.height}`;
       locationIdText.textContent = locationId;
-      status.textContent = "Image ready. Click the matching location on the map.";
+      setCrop(sourceImage.cropX, sourceImage.cropY);
+      setStatus(
+        sourceImage.width === QUESTION_WIDTH && sourceImage.height === QUESTION_HEIGHT
+          ? "Image is exactly 1400×1000. Click the matching location on the map."
+          : "Position the 1400×1000 crop, then click the matching location on the map.",
+      );
       updateActionState();
     } catch (error) {
       fileInput.value = "";
-      status.textContent = error instanceof Error ? error.message : "The image could not be prepared.";
+      setStatus(error instanceof Error ? error.message : "The image could not be prepared.", true);
     } finally {
       if (version === selectionVersion) fileInput.disabled = false;
     }
+  };
+
+  const sourcePointFromPointer = (event: PointerEvent): { x: number; y: number } | undefined => {
+    if (!sourceImage) return;
+    const bounds = cropCanvas.getBoundingClientRect();
+    const canvasX = (event.clientX - bounds.left) * cropCanvas.width / bounds.width;
+    const canvasY = (event.clientY - bounds.top) * cropCanvas.height / bounds.height;
+    const metrics = previewMetrics(sourceImage);
+    return {
+      x: (canvasX - metrics.imageX) / metrics.scale,
+      y: (canvasY - metrics.imageY) / metrics.scale,
+    };
+  };
+
+  const updateCropFromPointer = (event: PointerEvent): void => {
+    const point = sourcePointFromPointer(event);
+    if (point) setCrop(point.x - cropGrabX, point.y - cropGrabY);
   };
 
   fileInput.addEventListener("change", () => {
@@ -251,18 +375,46 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       void prepareFile(file);
     } else {
       clearQuestion();
-      status.textContent = "Choose an image to begin.";
+      setStatus("Choose an image to begin.");
     }
   });
 
+  cropCanvas.addEventListener("pointerdown", (event) => {
+    if (!sourceImage) return;
+    const point = sourcePointFromPointer(event);
+    if (!point) return;
+    const insideCrop = point.x >= sourceImage.cropX
+      && point.x <= sourceImage.cropX + QUESTION_WIDTH
+      && point.y >= sourceImage.cropY
+      && point.y <= sourceImage.cropY + QUESTION_HEIGHT;
+    cropGrabX = insideCrop ? point.x - sourceImage.cropX : QUESTION_WIDTH / 2;
+    cropGrabY = insideCrop ? point.y - sourceImage.cropY : QUESTION_HEIGHT / 2;
+    cropDragging = true;
+    cropCanvas.setPointerCapture(event.pointerId);
+    updateCropFromPointer(event);
+  });
+
+  cropCanvas.addEventListener("pointermove", (event) => {
+    if (cropDragging) updateCropFromPointer(event);
+  });
+
+  cropCanvas.addEventListener("pointerup", (event) => {
+    cropDragging = false;
+    if (cropCanvas.hasPointerCapture(event.pointerId)) cropCanvas.releasePointerCapture(event.pointerId);
+  });
+
+  cropCanvas.addEventListener("pointercancel", () => {
+    cropDragging = false;
+  });
+
   map.addEventListener("click", (event) => {
-    if (event.button !== 0 || !questionBlob) return;
+    if (event.button !== 0 || !sourceImage) return;
     const bounds = map.getBoundingClientRect();
     updatePin({
       x: clamp((event.clientX - bounds.left) / bounds.width),
       y: clamp(1 - (event.clientY - bounds.top) / bounds.height),
     });
-    status.textContent = "Location ready. Download the ZIP when the pin is correct.";
+    setStatus("Location ready. Download the ZIP when the crop and pin are correct.");
   });
 
   copyButton.addEventListener("click", async () => {
@@ -271,31 +423,31 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     try {
       await navigator.clipboard.writeText(formatAnswer(answer));
       copyButton.textContent = "Copied!";
-      status.textContent = "Copied the answer.txt coordinate.";
+      setStatus("Copied the answer.txt coordinate.");
       window.setTimeout(() => {
         copyButton.textContent = "Copy answer";
       }, 1600);
     } catch {
-      status.textContent = "Clipboard access failed. Select and copy the answer shown here.";
+      setStatus("Clipboard access failed. Select and copy the answer shown here.", true);
     }
   });
 
   downloadButton.addEventListener("click", async () => {
-    if (!questionBlob || !locationId || !answer) return;
+    if (!sourceImage || !locationId || !answer) return;
     downloadButton.disabled = true;
-    status.textContent = "Building location ZIP…";
+    setStatus("Building location ZIP…");
 
     try {
-      const directory = `${locationId}/`;
+      const questionBlob = await cropToQuestionWebp(sourceImage);
       const archive = zipSync({
-        [`${directory}question.webp`]: new Uint8Array(await questionBlob.arrayBuffer()),
-        [`${directory}answer.txt`]: strToU8(`${formatAnswer(answer)}\r\n`),
+        "question.webp": new Uint8Array(await questionBlob.arrayBuffer()),
+        "answer.txt": strToU8(`${formatAnswer(answer)}\r\n`),
       }, { level: 0 });
       const archiveBuffer = archive.slice().buffer as ArrayBuffer;
       downloadBlob(new Blob([archiveBuffer], { type: "application/zip" }), `${locationId}.zip`);
-      status.textContent = `Downloaded ${locationId}.zip. Extract its folder into src/locations/.`;
-    } catch {
-      status.textContent = "The location ZIP could not be created.";
+      setStatus(`Downloaded ${locationId}.zip. Extract its contents into src/locations/${locationId}/.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "The location ZIP could not be created.", true);
     } finally {
       updateActionState();
     }
@@ -303,6 +455,6 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
 
   window.addEventListener("pagehide", () => {
     selectionVersion += 1;
-    if (questionUrl) URL.revokeObjectURL(questionUrl);
+    if (sourceImage) URL.revokeObjectURL(sourceImage.url);
   }, { once: true });
 }
