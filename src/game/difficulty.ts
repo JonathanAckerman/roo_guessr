@@ -2,7 +2,7 @@ export const DIFFICULTIES = {
   easy: {
     label: "Easy",
     cropScale: 1,
-    description: "The full 500 px scene",
+    description: "The full 7:5 scene",
   },
   medium: {
     label: "Medium",

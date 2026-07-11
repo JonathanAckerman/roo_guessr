@@ -1,4 +1,6 @@
 import "./styles.css";
+import mapUrl from "./assets/dota-map.webp";
+import { renderAnswerEditor } from "./answer-editor";
 import { DIFFICULTIES, type Difficulty } from "./game/difficulty";
 import { locations } from "./game/locations";
 
@@ -40,7 +42,10 @@ function render(): void {
           <span class="wordmark__pin" aria-hidden="true"></span>
           <span>RooGuessr</span>
         </a>
-        <span class="location-count">${locations.length} curated ${locations.length === 1 ? "location" : "locations"}</span>
+        <div class="site-header__actions">
+          <span class="location-count">${locations.length} curated ${locations.length === 1 ? "location" : "locations"}</span>
+          <a class="tool-button" href="?tool=answers">Edit answers</a>
+        </div>
       </header>
 
       <section class="hero" aria-labelledby="hero-title">
@@ -99,4 +104,8 @@ function render(): void {
   });
 }
 
-render();
+if (new URLSearchParams(window.location.search).get("tool") === "answers") {
+  renderAnswerEditor(app, mapUrl);
+} else {
+  render();
+}

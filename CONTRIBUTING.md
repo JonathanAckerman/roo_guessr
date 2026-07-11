@@ -11,14 +11,18 @@ Thanks for helping expand the RooGuessr location pool.
 4. Run `pnpm check`.
 5. Open a pull request using the provided template.
 
+Maintainers can place new WebP captures in `src/assets/questions/`, run
+`pnpm dev`, and use **Edit answers** to create the final location directory and
+`answer.txt` file.
+
 Please use consistent Dota graphics and camera settings. Hide the HUD, minimap,
 cursor, heroes, particles, and other temporary clues. The Easy crop should be
 recognizable without being immediate; Medium and Hard must remain meaningfully
 guessable.
 
-The maintainer may adjust coordinates, crop centers, difficulty availability,
-or image framing during review. Submissions that are visually ambiguous or too
-similar to existing locations may be declined.
+The maintainer may adjust coordinates or image framing during review.
+Submissions that are visually ambiguous or too similar to existing locations
+may be declined.
 
 ## Code contributions
 

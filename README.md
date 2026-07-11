@@ -16,7 +16,7 @@ submit new locations through pull requests.
 5. Show the final score after all ten rounds.
 
 Difficulty changes the crop rather than the underlying question. Easy shows the
-full 500 px scene, Medium shows 70%, and Hard shows 45%.
+full 7:5 scene, Medium shows 70%, and Hard shows 45%.
 
 ## Development
 
@@ -39,13 +39,13 @@ You do not need permission to propose a location. The short version is:
 
 1. Fork this repository and create a branch.
 2. Add a kebab-case directory under `src/locations/`.
-3. Put `question.webp` and `location.json` in that directory.
+3. Put `question.webp` and `answer.txt` in that directory.
 4. Run `pnpm check`.
 5. Open a pull request for review.
 
 ```text
 src/locations/radiant-secret-shop/
-  location.json
+  answer.txt
   question.webp
 ```
 
@@ -53,8 +53,19 @@ The Easy image is the full submitted scene. RooGuessr derives the Medium and
 Hard crops from it automatically, and it discovers location directories without
 a central manifest to update.
 
-Read [the location format](src/locations/README.md) for the metadata schema and
+Read [the location format](src/locations/README.md) for the coordinate format and
 [the contribution guide](CONTRIBUTING.md) for capture and review expectations.
+
+## Editing answers locally
+
+Run `pnpm dev`, then choose **Edit answers** from the main page. The authoring
+page shows the master map and selected question side-by-side. Left-click the
+map to place the answer pin, then save it directly to `answer.txt`.
+
+Saving a staged image creates its `src/locations/<id>/` directory and moves the
+image into it as `question.webp`. Browsers cannot modify a Git checkout from the
+deployed website, so saving is available only through the local development
+server.
 
 ## Deployment
 
