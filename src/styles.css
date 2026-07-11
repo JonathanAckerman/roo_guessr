@@ -477,11 +477,24 @@ footer {
 
 .game-map__pin--answer {
   --pin-fill: #e8f7ff;
+  animation: answer-pin-drop 260ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
 .game-map__pin--answer span {
   border-radius: 1px;
   transform: translate(-50%, -50%) rotate(45deg);
+}
+
+@keyframes answer-pin-drop {
+  from {
+    opacity: 0;
+    transform: rotate(9deg) translateY(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(9deg) translateY(0);
+  }
 }
 
 .game-controls {
@@ -1003,6 +1016,7 @@ button.tool-button:disabled {
   *,
   *::before,
   *::after {
+    animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }

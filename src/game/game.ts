@@ -130,7 +130,12 @@ export function renderGame(
             <div class="game-map-wrap" data-game-map>
               <img class="game-map" src="${mapUrl}" alt="Dota map" draggable="false" />
               <svg class="game-answer-line" viewBox="0 0 100 100" preserveAspectRatio="none" hidden aria-hidden="true">
-                <line data-answer-line />
+                <defs>
+                  <clipPath id="answer-line-reveal" clipPathUnits="userSpaceOnUse">
+                    <polygon data-answer-line-clip />
+                  </clipPath>
+                </defs>
+                <line data-answer-line clip-path="url(#answer-line-reveal)" />
               </svg>
               <div class="game-map__pin game-map__pin--guess" data-guess-pin hidden aria-label="Your guess"><span></span></div>
               <div class="game-map__pin game-map__pin--answer" data-answer-pin hidden aria-label="Correct answer"><span></span></div>
@@ -168,6 +173,7 @@ export function renderGame(
     const guessPin = app.querySelector<HTMLElement>("[data-guess-pin]");
     const answerPin = app.querySelector<HTMLElement>("[data-answer-pin]");
     const answerLine = app.querySelector<SVGLineElement>("[data-answer-line]");
+    const answerLineClip = app.querySelector<SVGPolygonElement>("[data-answer-line-clip]");
     const answerLineSvg = app.querySelector<SVGSVGElement>(".game-answer-line");
     const mapStatus = app.querySelector<HTMLElement>("[data-map-status]");
     const timer = app.querySelector<HTMLElement>("[data-game-timer]");
@@ -178,7 +184,7 @@ export function renderGame(
     const roundScore = app.querySelector<HTMLElement>("[data-round-score]");
     const resultCopy = app.querySelector<HTMLElement>("[data-result-copy]");
 
-    if (!map || !guessPin || !answerPin || !answerLine || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore || !resultCopy) {
+    if (!map || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore || !resultCopy) {
       throw new Error("RooGuessr could not initialize the game round.");
     }
 
@@ -211,11 +217,53 @@ export function renderGame(
       mapStatus.textContent = timedOut ? "Time expired" : "Answer revealed";
 
       if (guess && distance !== undefined) {
-        answerLine.setAttribute("x1", String(guess.x * 100));
-        answerLine.setAttribute("y1", String((1 - guess.y) * 100));
-        answerLine.setAttribute("x2", String(location.answer.x * 100));
-        answerLine.setAttribute("y2", String((1 - location.answer.y) * 100));
+        const guessX = guess.x * 100;
+        const guessY = (1 - guess.y) * 100;
+        const answerX = location.answer.x * 100;
+        const answerY = (1 - location.answer.y) * 100;
+        const answerVectorX = answerX - guessX;
+        const answerVectorY = answerY - guessY;
+        const answerVectorLength = Math.hypot(answerVectorX, answerVectorY);
+        const clipHalfWidth = 3;
+        const clipPerpendicularX = answerVectorLength > 0
+          ? (-answerVectorY / answerVectorLength) * clipHalfWidth
+          : 0;
+        const clipPerpendicularY = answerVectorLength > 0
+          ? (answerVectorX / answerVectorLength) * clipHalfWidth
+          : 0;
+
+        const setAnswerLineReveal = (progress: number): void => {
+          const revealX = guessX + (answerVectorX * progress);
+          const revealY = guessY + (answerVectorY * progress);
+          answerLineClip.setAttribute("points", [
+            `${guessX + clipPerpendicularX},${guessY + clipPerpendicularY}`,
+            `${revealX + clipPerpendicularX},${revealY + clipPerpendicularY}`,
+            `${revealX - clipPerpendicularX},${revealY - clipPerpendicularY}`,
+            `${guessX - clipPerpendicularX},${guessY - clipPerpendicularY}`,
+          ].join(" "));
+        };
+
+        answerLine.setAttribute("x1", String(guessX));
+        answerLine.setAttribute("y1", String(guessY));
+        answerLine.setAttribute("x2", String(answerX));
+        answerLine.setAttribute("y2", String(answerY));
+        setAnswerLineReveal(0);
         answerLineSvg.removeAttribute("hidden");
+
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          setAnswerLineReveal(1);
+        } else {
+          const revealStart = performance.now() + 60;
+          const revealAnswerLine = (timestamp: number): void => {
+            const progress = Math.min(1, Math.max(0, (timestamp - revealStart) / 420));
+            const easedProgress = 1 - ((1 - progress) ** 3);
+            setAnswerLineReveal(easedProgress);
+
+            if (progress < 1) window.requestAnimationFrame(revealAnswerLine);
+          };
+
+          window.requestAnimationFrame(revealAnswerLine);
+        }
 
         resultCopy.textContent = distance <= FORGIVENESS_RADIUS
           ? "Direct hit — inside the forgiveness radius."
