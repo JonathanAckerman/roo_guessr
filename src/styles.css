@@ -189,25 +189,30 @@ h1 {
 }
 
 .map-window__pin {
+  --pin-fill: #ffdc32;
   position: absolute;
   top: 47%;
   left: 54%;
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border: 2px solid #f7e3c8;
-  border-radius: 50% 50% 50% 0;
-  background: #d67249;
-  box-shadow: 0 10px 30px rgba(53, 20, 9, 0.55);
-  transform: translate(-50%, -100%) rotate(-45deg);
+  width: 42px;
+  height: 58px;
+  margin-top: -58px;
+  margin-left: -21px;
+  clip-path: path("M 21 58 C 20 51 17 45 14 40.8 C 5.9 37.9 0 30.2 0 21 C 0 9.4 9.4 0 21 0 C 32.6 0 42 9.4 42 21 C 42 30.2 36.1 37.9 28 40.8 C 25 45 22 51 21 58 Z");
+  background: var(--pin-fill);
+  filter: drop-shadow(0 10px 12px rgba(53, 20, 9, 0.55));
+  transform: rotate(9deg);
+  transform-origin: 50% 100%;
 }
 
 .map-window__pin span {
+  position: absolute;
+  top: 21px;
+  left: 50%;
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: #22150f;
+  transform: translate(-50%, -50%);
 }
 
 .map-window__label {
@@ -440,20 +445,24 @@ footer {
 }
 
 .game-map__pin {
+  --pin-fill: #ffdc32;
   position: absolute;
   z-index: 3;
-  width: 34px;
-  height: 34px;
-  border: 3px solid #ffe0c0;
-  border-radius: 50% 50% 50% 0;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.62);
+  width: 30px;
+  height: 42px;
+  margin-top: -42px;
+  margin-left: -15px;
+  clip-path: path("M 15 42 C 14 37 12 32 10 29.14 C 4.2 27.1 0 21.55 0 15 C 0 6.72 6.72 0 15 0 C 23.28 0 30 6.72 30 15 C 30 21.55 25.8 27.1 20 29.14 C 18 32 16 37 15 42 Z");
+  background: var(--pin-fill);
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.62));
   pointer-events: none;
-  transform: translate(-50%, -100%) rotate(-45deg);
+  transform: rotate(9deg);
+  transform-origin: 50% 100%;
 }
 
 .game-map__pin span {
   position: absolute;
-  top: 50%;
+  top: 15px;
   left: 50%;
   width: 8px;
   height: 8px;
@@ -463,12 +472,16 @@ footer {
 }
 
 .game-map__pin--guess {
-  background: #d67249;
+  --pin-fill: #ffdc32;
 }
 
 .game-map__pin--answer {
-  border-color: #dff5df;
-  background: #6fa77a;
+  --pin-fill: #e8f7ff;
+}
+
+.game-map__pin--answer span {
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .game-controls {
@@ -678,21 +691,24 @@ footer {
 }
 
 .editor-pin {
+  --pin-fill: #ffdc32;
   position: absolute;
   z-index: 1;
-  width: 34px;
-  height: 34px;
-  border: 3px solid #ffe0c0;
-  border-radius: 50% 50% 50% 0;
-  background: #d67249;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.62);
+  width: 30px;
+  height: 42px;
+  margin-top: -42px;
+  margin-left: -15px;
+  clip-path: path("M 15 42 C 14 37 12 32 10 29.14 C 4.2 27.1 0 21.55 0 15 C 0 6.72 6.72 0 15 0 C 23.28 0 30 6.72 30 15 C 30 21.55 25.8 27.1 20 29.14 C 18 32 16 37 15 42 Z");
+  background: var(--pin-fill);
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.62));
   pointer-events: none;
-  transform: translate(-50%, -100%) rotate(-45deg);
+  transform: rotate(9deg);
+  transform-origin: 50% 100%;
 }
 
 .editor-pin span {
   position: absolute;
-  top: 50%;
+  top: 15px;
   left: 50%;
   width: 8px;
   height: 8px;
@@ -928,11 +944,15 @@ button.tool-button:disabled {
 
   .game-map__pin {
     width: 24px;
-    height: 24px;
-    border-width: 2px;
+    height: 34px;
+    margin-top: -34px;
+    margin-left: -12px;
+    clip-path: path("M 12 34 C 11 30 10 26 8 23.3 C 3.4 21.7 0 17.2 0 12 C 0 5.37 5.37 0 12 0 C 18.63 0 24 5.37 24 12 C 24 17.2 20.6 21.7 16 23.3 C 14 26 13 30 12 34 Z");
+    filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.62));
   }
 
   .game-map__pin span {
+    top: 12px;
     width: 6px;
     height: 6px;
   }
