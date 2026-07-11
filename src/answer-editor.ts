@@ -119,7 +119,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
 
       <section class="editor-intro" aria-labelledby="editor-title">
         <div>
-          <p class="kicker">Location builder</p>
+          <p class="kicker hero__question">Location builder</p>
           <h1 id="editor-title">Build a location.</h1>
         </div>
         <p>
