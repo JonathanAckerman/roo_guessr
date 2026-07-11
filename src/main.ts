@@ -1,4 +1,5 @@
 import "./styles.css";
+import homeHeroUrl from "./assets/home-hero.png";
 import mapUrl from "./assets/dota-map.webp";
 import { renderAnswerEditor } from "./answer-editor";
 import { renderGame } from "./game/game";
@@ -24,49 +25,29 @@ function render(): void {
         </a>
         <div class="site-header__actions">
           <span class="location-count">${locations.length} curated ${locations.length === 1 ? "location" : "locations"}</span>
-          <a class="tool-button" href="?tool=answers">Edit answers</a>
+          <a class="tool-button" href="?tool=answers">Add your own</a>
         </div>
       </header>
 
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero__copy">
-          <p class="kicker">How well do you know the battlefield?</p>
-          <h1 id="hero-title">A tiny piece of the map.<br />One precise guess.</h1>
+          <h1 class="kicker hero__question" id="hero-title">How well do you know the Dota map?</h1>
           <p class="hero__intro">
-            Study a close-up from the Dota map, drop your pin, and find out how
-            close you really were.
+            Somewhere in the world of Roo lies a battlefield between two ancient fragments of the Mad Moon.
+            A local peasant has collected a variety of nondescript photos of this land. I'm sure after
+            thousands of hours you can find where they were taken.
           </p>
         </div>
 
-        <div class="map-window" aria-hidden="true">
-          <div class="map-window__grid"></div>
-          <div class="map-window__river"></div>
-          <div class="map-window__pin"><span></span></div>
-          <div class="map-window__label">Your guess goes here</div>
-        </div>
-      </section>
-
-      <section class="setup-panel" aria-labelledby="run-title">
-        <div class="setup-panel__heading">
-          <div>
-            <p class="section-number">01</p>
-            <h2 id="run-title">Ready to play?</h2>
+        <div class="map-window">
+          <img class="map-window__image" src="${homeHeroUrl}" alt="" aria-hidden="true" draggable="false" />
+          <div class="map-window__actions">
+            <button class="start-button" type="button" data-start-game ${canStart ? "" : "disabled"}>
+              Start Game
+            </button>
           </div>
-          <p>Every run draws up to ten locations from the community-curated pool.</p>
-        </div>
-
-        <div class="start-row">
-          <button class="start-button" type="button" data-start-game ${canStart ? "" : "disabled"}>
-            ${canStart ? "Start Game" : "First locations coming soon"}
-          </button>
-          <p>${canStart ? `${Math.min(10, locations.length)} locations. One final score.` : "The project foundation is ready for its first map and location set."}</p>
         </div>
       </section>
-
-      <footer>
-        <span>Built in the open, one location at a time.</span>
-        <span>RooGuessr</span>
-      </footer>
     </main>
   `;
 

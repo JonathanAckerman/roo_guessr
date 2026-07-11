@@ -142,28 +142,29 @@ export function renderGame(
             </div>
           </article>
 
-          <article class="game-card">
-            <div class="game-card__heading">
-              <span>Question</span>
-              <span>Where is this?</span>
-            </div>
-            <div class="game-question-wrap">
-              <img class="game-question" src="${location.imageUrl}" alt="Location question ${roundIndex + 1}" />
-            </div>
-          </article>
-        </section>
+          <div class="game-side">
+            <article class="game-card">
+              <div class="game-card__heading">
+                <span>Question</span>
+                <span>Where is this?</span>
+              </div>
+              <div class="game-question-wrap">
+                <img class="game-question" src="${location.imageUrl}" alt="Location question ${roundIndex + 1}" />
+              </div>
+            </article>
 
-        <section class="game-controls">
-          <div class="game-result" data-game-result hidden>
-            <p class="section-number">Round score</p>
-            <strong data-round-score>0</strong>
-            <p data-result-copy></p>
-          </div>
-          <div class="game-controls__actions">
-            <button class="start-button" type="button" data-lock-in disabled>Lock In</button>
-            <button class="start-button" type="button" data-next-round hidden>
-              ${roundIndex + 1 === runLocations.length ? "View final score" : "Next location"}
-            </button>
+            <section class="game-controls">
+              <div class="game-result" data-game-result hidden>
+                <p class="section-number">Round score</p>
+                <strong data-round-score>0</strong>
+              </div>
+              <div class="game-controls__actions">
+                <button class="start-button" type="button" data-lock-in disabled>Lock In</button>
+                <button class="start-button" type="button" data-next-round hidden>
+                  ${roundIndex + 1 === runLocations.length ? "Results" : "Next"}
+                </button>
+              </div>
+            </section>
           </div>
         </section>
       </main>
@@ -182,18 +183,20 @@ export function renderGame(
     const nextButton = app.querySelector<HTMLButtonElement>("[data-next-round]");
     const result = app.querySelector<HTMLElement>("[data-game-result]");
     const roundScore = app.querySelector<HTMLElement>("[data-round-score]");
-    const resultCopy = app.querySelector<HTMLElement>("[data-result-copy]");
 
-    if (!map || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore || !resultCopy) {
+    if (!map || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore) {
       throw new Error("RooGuessr could not initialize the game round.");
     }
 
     const showGuess = (): void => {
       if (!guess) return;
       guessPin.style.cssText = pinPosition(guess);
+      guessPin.classList.remove("game-map__pin--tipping");
       guessPin.hidden = false;
+      void guessPin.offsetWidth;
+      guessPin.classList.add("game-map__pin--tipping");
       lockButton.disabled = false;
-      mapStatus.textContent = "Pin placed — move it or lock in";
+      mapStatus.textContent = "";
     };
 
     const lockIn = (timedOut: boolean): void => {
@@ -201,7 +204,6 @@ export function renderGame(
       locked = true;
       stopTimer();
 
-      const distance = guess ? distanceBetween(guess, location.answer) : undefined;
       const score = guess ? scoreGuess(guess, location.answer) : 0;
       totalScore += score;
       roundScores.push(score);
@@ -216,7 +218,7 @@ export function renderGame(
       roundScore.textContent = score.toLocaleString();
       mapStatus.textContent = timedOut ? "Time expired" : "Answer revealed";
 
-      if (guess && distance !== undefined) {
+      if (guess) {
         const guessX = guess.x * 100;
         const guessY = (1 - guess.y) * 100;
         const answerX = location.answer.x * 100;
@@ -265,11 +267,6 @@ export function renderGame(
           window.requestAnimationFrame(revealAnswerLine);
         }
 
-        resultCopy.textContent = distance <= FORGIVENESS_RADIUS
-          ? "Direct hit — inside the forgiveness radius."
-          : `${(distance * 100).toFixed(1)}% of the map diagonal away.`;
-      } else {
-        resultCopy.textContent = "No pin was placed before time expired.";
       }
     };
 

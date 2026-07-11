@@ -185,7 +185,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
         </div>
       </section>
 
-      <footer>
+      <footer class="editor-footer">
         <span>Extract the ZIP contents into <code>src/locations/&lt;zip-name&gt;/</code>.</span>
         <a class="editor-footer-link" href="/">Back to RooGuessr</a>
       </footer>
