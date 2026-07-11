@@ -559,6 +559,26 @@ footer {
   font-size: 0.82rem;
 }
 
+.editor-save-panel code {
+  color: #d9b88f;
+}
+
+.editor-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+  align-items: center;
+}
+
+button.tool-button {
+  cursor: pointer;
+}
+
+button.tool-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .editor-footer-link {
   color: #d9b88f;
   text-decoration: none;
@@ -670,6 +690,16 @@ footer {
 
   .editor-save-panel .start-button {
     margin-top: 18px;
+  }
+
+  .editor-actions {
+    display: grid;
+  }
+
+  .editor-actions .start-button,
+  .editor-actions .tool-button {
+    width: 100%;
+    margin-top: 12px;
   }
 }
 

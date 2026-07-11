@@ -6,15 +6,19 @@ Thanks for helping expand the RooGuessr location pool.
 
 1. Fork the repository.
 2. Create a branch for your location.
-3. Add one directory under `src/locations/` following the documented
-   [location format](src/locations/README.md).
-4. Run `pnpm check`.
+3. Open **Edit answers** on the RooGuessr website, choose your screenshot, and
+   mark its position on the map.
+4. Download the generated ZIP and extract its UUID folder into `src/locations/`.
 5. Open a pull request using the provided template.
 
-Use **Edit answers** on the RooGuessr website to select your local
-`question.webp`, mark its position on the master map, and copy the generated
-coordinate line. Paste that line into the location's `answer.txt` file. The
-tool runs entirely in the browser and does not upload or modify your files.
+The builder converts PNG, JPG, and WebP inputs into the required 1400×1000 WebP
+and creates `answer.txt` automatically. It runs entirely in the browser and does
+not upload your source image. If you have the development tools installed, run
+`pnpm check` before submitting; GitHub Actions performs the same validation on
+the pull request.
+
+See the documented [location format](src/locations/README.md) for the exact
+files accepted by the repository.
 
 Please use consistent Dota graphics and camera settings. Hide the HUD, minimap,
 cursor, heroes, particles, and other temporary clues. The Easy crop should be

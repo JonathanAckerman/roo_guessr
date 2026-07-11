@@ -38,13 +38,13 @@ pnpm check
 You do not need permission to propose a location. The short version is:
 
 1. Fork this repository and create a branch.
-2. Add a kebab-case directory under `src/locations/`.
-3. Put `question.webp` and `answer.txt` in that directory.
-4. Run `pnpm check`.
-5. Open a pull request for review.
+2. Open **Edit answers** on the RooGuessr website.
+3. Choose a screenshot, mark its map position, and download the location ZIP.
+4. Extract the UUID folder from the ZIP into `src/locations/`.
+5. Open a pull request for review. GitHub Actions validates the location.
 
 ```text
-src/locations/radiant-secret-shop/
+src/locations/67672370-d5cc-4898-825c-26789890240a/
   answer.txt
   question.webp
 ```
@@ -56,15 +56,16 @@ a central manifest to update.
 Read [the location format](src/locations/README.md) for the coordinate format and
 [the contribution guide](CONTRIBUTING.md) for capture and review expectations.
 
-## Marking an answer
+## Building a location
 
-Choose **Edit answers** on the RooGuessr website and select your local
-`question.webp` file. The tool shows the master map and question side-by-side.
-Left-click the correct point on the map, copy the generated coordinate line,
-then paste it into the location's `answer.txt` file.
+Choose **Edit answers** on the RooGuessr website and select a PNG, JPG, or WebP
+screenshot. The tool center-crops it to 7:5, converts it to a 1400×1000 WebP,
+and previews the final `question.webp`. Left-click the correct point on the map,
+then download the generated location ZIP.
 
-The tool runs entirely in the browser. It does not upload the selected image or
-modify any repository files, so using it does not require Node.js or pnpm.
+The ZIP contains a UUID-named folder with `question.webp` and `answer.txt`, ready
+to extract into `src/locations/`. Everything runs in the browser: the source
+image is not uploaded, and building a location does not require Node.js or pnpm.
 
 ## Deployment
 
