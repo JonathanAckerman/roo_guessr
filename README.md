@@ -14,6 +14,10 @@ submit new locations through pull requests.
 3. Reveal the answer and award up to 5,000 points per round.
 4. Show the final score after all ten rounds.
 
+Each round has a one-minute timer. When it expires, RooGuessr locks the current
+pin automatically; a round with no pin scores zero. Scores fall with distance
+after a small forgiveness radius around the exact answer.
+
 ## Development
 
 RooGuessr requires Node.js 24 or newer and pnpm 11.

@@ -1,6 +1,7 @@
 import "./styles.css";
 import mapUrl from "./assets/dota-map.webp";
 import { renderAnswerEditor } from "./answer-editor";
+import { renderGame } from "./game/game";
 import { locations } from "./game/locations";
 
 const appElement = document.querySelector<HTMLDivElement>("#app");
@@ -55,8 +56,8 @@ function render(): void {
         </div>
 
         <div class="start-row">
-          <button class="start-button" type="button" ${canStart ? "" : "disabled"}>
-            ${canStart ? "Start run" : "First locations coming soon"}
+          <button class="start-button" type="button" data-start-game ${canStart ? "" : "disabled"}>
+            ${canStart ? "Start Game" : "First locations coming soon"}
           </button>
           <p>${canStart ? `${Math.min(10, locations.length)} locations. One final score.` : "The project foundation is ready for its first map and location set."}</p>
         </div>
@@ -68,6 +69,10 @@ function render(): void {
       </footer>
     </main>
   `;
+
+  app.querySelector<HTMLButtonElement>("[data-start-game]")?.addEventListener("click", () => {
+    renderGame(app, mapUrl, locations);
+  });
 }
 
 if (new URLSearchParams(window.location.search).get("tool") === "answers") {
