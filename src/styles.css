@@ -39,6 +39,12 @@ a:focus-visible {
   margin: 0 auto;
 }
 
+.home-shell {
+  --home-header-height: 92px;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 .site-header {
   display: flex;
   align-items: center;
@@ -101,6 +107,20 @@ a:focus-visible {
   gap: 48px;
   align-items: center;
   padding: clamp(36px, 5vw, 64px) 0 clamp(68px, 10vw, 126px);
+}
+
+.home-shell .hero {
+  height: calc(100dvh - var(--home-header-height));
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(22px, 4vh, 40px);
+  align-items: stretch;
+  padding: clamp(24px, 4vh, 36px) 0 clamp(20px, 3vh, 30px);
+}
+
+.home-shell .map-window {
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
 }
 
 .kicker {
@@ -850,6 +870,10 @@ button.tool-button:disabled {
 }
 
 @media (max-width: 560px) {
+  .home-shell {
+    --home-header-height: 74px;
+  }
+
   .site-shell {
     width: min(100% - 24px, 1180px);
   }

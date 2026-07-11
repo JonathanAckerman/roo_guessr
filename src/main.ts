@@ -17,7 +17,7 @@ function render(): void {
   const canStart = locations.length > 0;
 
   app.innerHTML = `
-    <main class="site-shell">
+    <main class="site-shell home-shell">
       <header class="site-header">
         <a class="wordmark" href="/" aria-label="RooGuessr home">
           <span class="wordmark__pin" aria-hidden="true"></span>
