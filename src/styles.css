@@ -28,6 +28,13 @@ a {
   font: inherit;
 }
 
+.score-value {
+  font-family: "DM Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
 button:focus-visible,
 a:focus-visible {
   outline: 3px solid #f1b477;
@@ -467,11 +474,11 @@ h2 {
 }
 
 .game-controls {
-  display: flex;
+  display: grid;
   flex: 1 1 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   align-items: center;
-  justify-content: space-between;
   min-height: 0;
   margin-top: 12px;
   padding: 10px 12px;
@@ -482,6 +489,9 @@ h2 {
 
 .game-result {
   min-width: 0;
+  justify-self: center;
+  text-align: center;
+  transform: translateY(-3px);
 }
 
 .game-result .section-number {
@@ -492,14 +502,17 @@ h2 {
 .game-result strong {
   display: block;
   color: #f7f2e5;
-  font-family: "Fraunces", serif;
   font-size: clamp(1.4rem, 2vw, 1.85rem);
   line-height: 1;
 }
 
 .game-controls__actions {
-  flex: 0 0 120px;
-  margin-left: auto;
+  width: 120px;
+  justify-self: center;
+}
+
+.game-result[hidden] + .game-controls__actions {
+  grid-column: 1 / -1;
 }
 
 .game-controls__actions .start-button {
@@ -971,7 +984,7 @@ button.tool-button:disabled {
   }
 
   .game-controls__actions {
-    flex-basis: 104px;
+    width: 104px;
     margin-top: 0;
   }
 

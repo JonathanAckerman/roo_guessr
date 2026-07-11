@@ -77,13 +77,13 @@ export function renderGame(
 
         <section class="game-final" aria-labelledby="final-score-title">
           <p class="kicker">Final score</p>
-          <h1 id="final-score-title">${totalScore.toLocaleString()}</h1>
+          <h1 class="score-value" id="final-score-title">${totalScore.toLocaleString()}</h1>
           <p>out of ${maximumScore.toLocaleString()} points across ${runLocations.length} ${runLocations.length === 1 ? "location" : "locations"}.</p>
           <div class="game-final__rounds" aria-label="Round scores">
             ${roundScores.map((score, index) => `
               <div>
                 <span>Round ${index + 1}</span>
-                <strong>${score.toLocaleString()}</strong>
+                <strong class="score-value">${score.toLocaleString()}</strong>
               </div>
             `).join("")}
           </div>
@@ -117,7 +117,7 @@ export function renderGame(
           <div class="game-stats" aria-label="Game status">
             <div><span>Round</span><strong>${roundIndex + 1} / ${runLocations.length}</strong></div>
             <div><span>Time</span><strong class="game-timer" data-game-timer>1:00</strong></div>
-            <div><span>Total</span><strong data-total-score>${totalScore.toLocaleString()}</strong></div>
+            <div><span>Total</span><strong class="score-value" data-total-score>${totalScore.toLocaleString()}</strong></div>
           </div>
         </header>
 
@@ -156,7 +156,7 @@ export function renderGame(
             <section class="game-controls">
               <div class="game-result" data-game-result hidden>
                 <p class="section-number">Round score</p>
-                <strong data-round-score>0</strong>
+                <strong class="score-value" data-round-score>0</strong>
               </div>
               <div class="game-controls__actions">
                 <button class="start-button" type="button" data-lock-in disabled>Lock In</button>
