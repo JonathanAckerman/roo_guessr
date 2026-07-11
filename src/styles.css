@@ -100,7 +100,7 @@ a:focus-visible {
   grid-template-columns: 1fr;
   gap: 48px;
   align-items: center;
-  padding: clamp(68px, 10vw, 126px) 0;
+  padding: clamp(36px, 5vw, 64px) 0 clamp(68px, 10vw, 126px);
 }
 
 .kicker {
@@ -877,7 +877,7 @@ button.tool-button:disabled {
 
   .hero {
     gap: 46px;
-    padding: 60px 0;
+    padding: 38px 0 60px;
   }
 
   h1 {
