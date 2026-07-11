@@ -23,9 +23,8 @@ See the documented [location format](src/locations/README.md) for the exact
 files accepted by the repository.
 
 Please use consistent Dota graphics and camera settings. Hide the HUD, minimap,
-cursor, heroes, particles, and other temporary clues. The Easy crop should be
-recognizable without being immediate; Medium and Hard must remain meaningfully
-guessable.
+cursor, heroes, particles, and other temporary clues. The question should be
+recognizable without making the answer immediate.
 
 The maintainer may adjust coordinates or image framing during review.
 Submissions that are visually ambiguous or too similar to existing locations

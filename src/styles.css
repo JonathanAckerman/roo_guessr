@@ -85,8 +85,7 @@ a:focus-visible {
 
 .location-count,
 .kicker,
-.section-number,
-.difficulty-card__eyebrow {
+.section-number {
   color: #91a89a;
   font-size: 0.73rem;
   font-weight: 700;
@@ -260,55 +259,10 @@ h2 {
   line-height: 1.6;
 }
 
-.difficulty-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-.difficulty-card {
-  min-height: 180px;
-  padding: 23px;
-  border: 1px solid rgba(237, 243, 232, 0.12);
-  border-radius: 14px;
-  color: #9caf9f;
-  background: rgba(6, 14, 12, 0.42);
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
-}
-
-.difficulty-card:hover {
-  border-color: rgba(214, 114, 73, 0.55);
-  transform: translateY(-2px);
-}
-
-.difficulty-card--selected {
-  border-color: #d67249;
-  background: rgba(214, 114, 73, 0.12);
-}
-
-.difficulty-card strong,
-.difficulty-card span {
-  display: block;
-}
-
-.difficulty-card strong {
-  margin: 27px 0 8px;
-  color: #f2eee2;
-  font-family: "Fraunces", serif;
-  font-size: 1.55rem;
-}
-
-.difficulty-card > span:last-child {
-  line-height: 1.5;
-}
-
 .start-row {
   display: flex;
   gap: 24px;
   align-items: center;
-  margin-top: 28px;
 }
 
 .start-button {
@@ -622,18 +576,6 @@ button.tool-button:disabled {
 
   .setup-panel__heading > p {
     margin-top: 20px;
-  }
-
-  .difficulty-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .difficulty-card {
-    min-height: auto;
-  }
-
-  .difficulty-card strong {
-    margin-top: 15px;
   }
 
   .editor-intro {

@@ -1,7 +1,6 @@
 import "./styles.css";
 import mapUrl from "./assets/dota-map.webp";
 import { renderAnswerEditor } from "./answer-editor";
-import { DIFFICULTIES, type Difficulty } from "./game/difficulty";
 import { locations } from "./game/locations";
 
 const appElement = document.querySelector<HTMLDivElement>("#app");
@@ -11,26 +10,6 @@ if (!appElement) {
 }
 
 const app: HTMLDivElement = appElement;
-
-let selectedDifficulty: Difficulty = "easy";
-
-function difficultyButton(difficulty: Difficulty): string {
-  const details = DIFFICULTIES[difficulty];
-  const selected = difficulty === selectedDifficulty;
-
-  return `
-    <button
-      class="difficulty-card${selected ? " difficulty-card--selected" : ""}"
-      type="button"
-      data-difficulty="${difficulty}"
-      aria-pressed="${selected}"
-    >
-      <span class="difficulty-card__eyebrow">${Math.round(details.cropScale * 100)}% view</span>
-      <strong>${details.label}</strong>
-      <span>${details.description}</span>
-    </button>
-  `;
-}
 
 function render(): void {
   const canStart = locations.length > 0;
@@ -66,26 +45,20 @@ function render(): void {
         </div>
       </section>
 
-      <section class="setup-panel" aria-labelledby="difficulty-title">
+      <section class="setup-panel" aria-labelledby="run-title">
         <div class="setup-panel__heading">
           <div>
             <p class="section-number">01</p>
-            <h2 id="difficulty-title">Choose your crop</h2>
+            <h2 id="run-title">Ready to play?</h2>
           </div>
-          <p>Every mode uses the same location—the harder modes simply show less of it.</p>
-        </div>
-
-        <div class="difficulty-grid">
-          ${difficultyButton("easy")}
-          ${difficultyButton("medium")}
-          ${difficultyButton("hard")}
+          <p>Every run draws up to ten locations from the community-curated pool.</p>
         </div>
 
         <div class="start-row">
           <button class="start-button" type="button" ${canStart ? "" : "disabled"}>
-            ${canStart ? `Start ${DIFFICULTIES[selectedDifficulty].label} run` : "First locations coming soon"}
+            ${canStart ? "Start run" : "First locations coming soon"}
           </button>
-          <p>${canStart ? "Ten locations. One final score." : "The project foundation is ready for its first map and location set."}</p>
+          <p>${canStart ? `${Math.min(10, locations.length)} locations. One final score.` : "The project foundation is ready for its first map and location set."}</p>
         </div>
       </section>
 
@@ -95,13 +68,6 @@ function render(): void {
       </footer>
     </main>
   `;
-
-  app.querySelectorAll<HTMLButtonElement>("[data-difficulty]").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedDifficulty = button.dataset.difficulty as Difficulty;
-      render();
-    });
-  });
 }
 
 if (new URLSearchParams(window.location.search).get("tool") === "answers") {

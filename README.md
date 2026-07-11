@@ -9,14 +9,10 @@ submit new locations through pull requests.
 
 ## Planned game loop
 
-1. Choose Easy, Medium, or Hard.
-2. Play ten randomly selected locations.
-3. Place a pin on the full map for each location.
-4. Reveal the answer and award up to 5,000 points per round.
-5. Show the final score after all ten rounds.
-
-Difficulty changes the crop rather than the underlying question. Easy shows the
-full 7:5 scene, Medium shows 70%, and Hard shows 45%.
+1. Play ten randomly selected locations.
+2. Place a pin on the full map for each location.
+3. Reveal the answer and award up to 5,000 points per round.
+4. Show the final score after all ten rounds.
 
 ## Development
 
@@ -49,9 +45,8 @@ src/locations/67672370-d5cc-4898-825c-26789890240a/
   question.webp
 ```
 
-The Easy image is the full submitted scene. RooGuessr derives the Medium and
-Hard crops from it automatically, and it discovers location directories without
-a central manifest to update.
+RooGuessr shows the submitted question image as-is and discovers location
+directories without a central manifest to update.
 
 Read [the location format](src/locations/README.md) for the coordinate format and
 [the contribution guide](CONTRIBUTING.md) for capture and review expectations.
