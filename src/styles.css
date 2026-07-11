@@ -620,26 +620,12 @@ h2 {
   padding: clamp(24px, 4vh, 36px) 0 36px;
 }
 
-.editor-intro h1 {
-  max-width: none;
-  margin-bottom: 18px;
-  font-family: "DM Sans", sans-serif;
-  font-size: clamp(1.8rem, 3vw, 2.7rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.04em;
-}
-
 .editor-intro > p {
   max-width: none;
   margin-bottom: 0;
   color: #aab9af;
   font-size: clamp(1rem, 1.5vw, 1.18rem);
   line-height: 1.65;
-}
-
-.editor-intro strong {
-  color: #f2c39f;
 }
 
 .editor-toolbar {

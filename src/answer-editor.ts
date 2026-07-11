@@ -119,12 +119,11 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
 
       <section class="editor-intro" aria-labelledby="editor-title">
         <div>
-          <p class="kicker hero__question">Location builder</p>
-          <h1 id="editor-title">Build a location.</h1>
+          <p class="kicker hero__question" id="editor-title">Location builder</p>
         </div>
         <p>
           Choose a screenshot, select its ${QUESTION_WIDTH}×${QUESTION_HEIGHT} crop, mark its location,
-          and download a ready-to-commit ZIP. Coordinates use <strong>(0, 0)</strong> at the bottom-left.
+          and download a ready-to-commit ZIP.
         </p>
       </section>
 
