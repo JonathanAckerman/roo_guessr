@@ -1,18 +1,5 @@
 import type { NormalizedPoint } from "./game/locations";
 
-interface EditableQuestion {
-  sourceKind: "staged" | "location";
-  sourceName: string;
-  id: string;
-  answer: NormalizedPoint | null;
-  label: string;
-  imageUrl: string;
-}
-
-interface QuestionListResponse {
-  questions: EditableQuestion[];
-}
-
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
@@ -25,8 +12,7 @@ function roundedPoint(point: NormalizedPoint): NormalizedPoint {
 }
 
 export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
-  let questions: EditableQuestion[] = [];
-  let selectedQuestion: EditableQuestion | undefined;
+  let questionUrl: string | undefined;
   let answer: NormalizedPoint | undefined;
 
   app.innerHTML = `
@@ -42,28 +28,17 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       <section class="editor-intro" aria-labelledby="editor-title">
         <div>
           <p class="kicker">Location authoring</p>
-          <h1 id="editor-title">Edit the answer.</h1>
+          <h1 id="editor-title">Mark the answer.</h1>
         </div>
         <p>
-          Choose a question, then left-click the corresponding point on the map.
+          Choose your question image, then left-click its location on the map.
           Coordinates use <strong>(0, 0)</strong> at the bottom-left.
         </p>
       </section>
 
       <section class="editor-toolbar" aria-label="Question selection">
-        <label for="question-search">Question image</label>
-        <input
-          id="question-search"
-          type="search"
-          list="question-options"
-          data-question-search
-          placeholder="Search new questions by name…"
-          autocomplete="off"
-          disabled
-        />
-        <datalist id="question-options" data-question-options></datalist>
-        <label for="location-id">Location ID</label>
-        <input id="location-id" data-location-id pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="radiant-secret-shop" disabled />
+        <label for="question-file">Question image</label>
+        <input id="question-file" type="file" accept=".webp,image/webp" data-question-file />
       </section>
 
       <section class="editor-workspace">
@@ -81,50 +56,48 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
         <article class="editor-card">
           <div class="editor-card__heading">
             <span>Question</span>
-            <span>7:5 source image</span>
+            <span data-question-name>7:5 WebP image</span>
           </div>
           <div class="editor-question-wrap">
             <img class="editor-question" alt="Selected RooGuessr question" hidden />
-            <p class="editor-empty" data-question-empty>Search for a new local question.</p>
+            <p class="editor-empty" data-question-empty>Choose a question image from your computer.</p>
           </div>
         </article>
       </section>
 
       <section class="editor-save-panel">
         <div>
-          <p class="section-number">Answer file</p>
+          <p class="section-number">answer.txt</p>
           <strong data-answer-text>—</strong>
-          <p data-editor-status>This tool writes <code>answer.txt</code> when RooGuessr is running locally.</p>
+          <p data-editor-status>Choose an image and place its pin on the map.</p>
         </div>
-        <button class="start-button" type="button" data-save-answer disabled>Save answer</button>
+        <button class="start-button" type="button" data-copy-answer disabled>Copy answer.txt value</button>
       </section>
 
       <footer>
-        <span>Staged captures become playable locations when saved.</span>
+        <span>Paste the copied line into the location's <code>answer.txt</code> file.</span>
         <a class="editor-footer-link" href="/">Back to RooGuessr</a>
       </footer>
     </main>
   `;
 
-  const searchInput = app.querySelector<HTMLInputElement>("[data-question-search]");
-  const questionOptions = app.querySelector<HTMLDataListElement>("[data-question-options]");
-  const idInput = app.querySelector<HTMLInputElement>("[data-location-id]");
+  const fileInput = app.querySelector<HTMLInputElement>("[data-question-file]");
   const map = app.querySelector<HTMLImageElement>(".editor-map");
   const pin = app.querySelector<HTMLDivElement>(".editor-pin");
   const questionImage = app.querySelector<HTMLImageElement>(".editor-question");
   const questionEmpty = app.querySelector<HTMLElement>("[data-question-empty]");
+  const questionName = app.querySelector<HTMLElement>("[data-question-name]");
   const coordinateLabel = app.querySelector<HTMLElement>("[data-coordinate-label]");
   const answerText = app.querySelector<HTMLElement>("[data-answer-text]");
   const status = app.querySelector<HTMLElement>("[data-editor-status]");
-  const saveButton = app.querySelector<HTMLButtonElement>("[data-save-answer]");
+  const copyButton = app.querySelector<HTMLButtonElement>("[data-copy-answer]");
 
-  if (!searchInput || !questionOptions || !idInput || !map || !pin || !questionImage || !questionEmpty || !coordinateLabel || !answerText || !status || !saveButton) {
+  if (!fileInput || !map || !pin || !questionImage || !questionEmpty || !questionName || !coordinateLabel || !answerText || !status || !copyButton) {
     throw new Error("RooGuessr answer editor could not initialize.");
   }
 
-  const updateSaveState = (): void => {
-    const validId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(idInput.value);
-    saveButton.disabled = !selectedQuestion || !answer || !validId;
+  const updateCopyState = (): void => {
+    copyButton.disabled = !questionUrl || !answer;
   };
 
   const updatePin = (point: NormalizedPoint | undefined): void => {
@@ -141,114 +114,62 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       answerText.textContent = `${answer.x.toFixed(4)}, ${answer.y.toFixed(4)}`;
     }
 
-    updateSaveState();
+    updateCopyState();
   };
 
-  const selectQuestion = (question: EditableQuestion | undefined): void => {
-    selectedQuestion = question;
+  const clearQuestionUrl = (): void => {
+    if (questionUrl) URL.revokeObjectURL(questionUrl);
+    questionUrl = undefined;
+  };
 
-    if (!question) {
-      idInput.value = "";
-      idInput.disabled = true;
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    clearQuestionUrl();
+    updatePin(undefined);
+
+    if (!file) {
+      questionImage.removeAttribute("src");
       questionImage.hidden = true;
       questionEmpty.hidden = false;
-      updatePin(undefined);
+      questionName.textContent = "7:5 WebP image";
+      status.textContent = "Choose an image and place its pin on the map.";
       return;
     }
 
-    idInput.value = question.id;
-    idInput.disabled = question.sourceKind === "location";
-    questionImage.src = question.imageUrl;
+    questionUrl = URL.createObjectURL(file);
+    questionImage.src = questionUrl;
     questionImage.hidden = false;
     questionEmpty.hidden = true;
-    updatePin(question.answer ?? undefined);
-    status.textContent = question.sourceKind === "staged"
-      ? "Saving will create the location folder, move this image, and write answer.txt."
-      : "This location is not yet on origin/main; saving will update its answer.txt file.";
-  };
-
-  const loadQuestions = async (preferredId?: string): Promise<void> => {
-    try {
-      const response = await fetch("/__rooguessr/questions", { cache: "no-store" });
-      if (!response.ok) throw new Error("The local authoring service is unavailable.");
-      const payload = await response.json() as QuestionListResponse;
-      questions = payload.questions;
-
-      questionOptions.replaceChildren(...questions.map((question) => {
-        const option = document.createElement("option");
-        option.value = question.label;
-        return option;
-      }));
-      searchInput.disabled = questions.length === 0;
-
-      const preferredQuestion = preferredId ? questions.find((question) => question.id === preferredId) : undefined;
-      searchInput.value = preferredQuestion?.label ?? "";
-      selectQuestion(preferredQuestion);
-
-      if (questions.length === 0) {
-        searchInput.placeholder = "No new local questions found";
-        status.textContent = "Only captures and locations that do not exist on origin/main appear here.";
-      } else {
-        searchInput.placeholder = "Search new questions by name…";
-        status.textContent = "Search by filename to choose a question that is not yet on origin/main.";
-      }
-    } catch {
-      questionOptions.innerHTML = "";
-      searchInput.value = "";
-      searchInput.placeholder = "Run pnpm dev locally";
-      searchInput.disabled = true;
-      status.textContent = "Saving files is available only from the local development server. Run pnpm dev, then reopen this page.";
-      selectQuestion(undefined);
-    }
-  };
-
-  const selectMatchingQuestion = (): void => {
-    const search = searchInput.value.trim().toLocaleLowerCase();
-    const question = questions.find((candidate) => candidate.label.toLocaleLowerCase() === search);
-    selectQuestion(question);
-  };
-
-  searchInput.addEventListener("input", selectMatchingQuestion);
-  searchInput.addEventListener("change", selectMatchingQuestion);
-
-  idInput.addEventListener("input", updateSaveState);
+    questionName.textContent = file.name;
+    status.textContent = "Now click the matching location on the map.";
+    updateCopyState();
+  });
 
   map.addEventListener("click", (event) => {
-    if (event.button !== 0 || !selectedQuestion) return;
+    if (event.button !== 0 || !questionUrl) return;
     const bounds = map.getBoundingClientRect();
     updatePin({
       x: clamp((event.clientX - bounds.left) / bounds.width),
       y: clamp(1 - (event.clientY - bounds.top) / bounds.height),
     });
-    status.textContent = "Answer moved. Save when the pin is in the correct place.";
+    status.textContent = "Answer ready. Copy the value when the pin is correct.";
   });
 
-  saveButton.addEventListener("click", async () => {
-    if (!selectedQuestion || !answer) return;
-    saveButton.disabled = true;
-    status.textContent = "Saving…";
+  copyButton.addEventListener("click", async () => {
+    if (!answer) return;
+    const value = `${answer.x.toFixed(4)}, ${answer.y.toFixed(4)}`;
 
     try {
-      const response = await fetch("/__rooguessr/save-answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceKind: selectedQuestion.sourceKind,
-          sourceName: selectedQuestion.sourceName,
-          id: idInput.value,
-          answer,
-        }),
-      });
-      const payload = await response.json() as { directory?: string; error?: string };
-      if (!response.ok || !payload.directory) throw new Error(payload.error ?? "The answer could not be saved.");
-
-      status.textContent = `Saved to ${payload.directory}answer.txt`;
-      await loadQuestions(idInput.value);
-    } catch (error) {
-      status.textContent = error instanceof Error ? error.message : "The answer could not be saved.";
-      updateSaveState();
+      await navigator.clipboard.writeText(value);
+      copyButton.textContent = "Copied!";
+      status.textContent = "Copied. Paste this line into the location's answer.txt file.";
+      window.setTimeout(() => {
+        copyButton.textContent = "Copy answer.txt value";
+      }, 1600);
+    } catch {
+      status.textContent = "Clipboard access failed. Select and copy the answer.txt value shown here.";
     }
   });
 
-  void loadQuestions();
+  window.addEventListener("pagehide", clearQuestionUrl, { once: true });
 }

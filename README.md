@@ -56,21 +56,15 @@ a central manifest to update.
 Read [the location format](src/locations/README.md) for the coordinate format and
 [the contribution guide](CONTRIBUTING.md) for capture and review expectations.
 
-## Editing answers locally
+## Marking an answer
 
-Run `pnpm dev`, then choose **Edit answers** from the main page. The authoring
-page shows the master map and selected question side-by-side. Left-click the
-map to place the answer pin, then save it directly to `answer.txt`.
+Choose **Edit answers** on the RooGuessr website and select your local
+`question.webp` file. The tool shows the master map and question side-by-side.
+Left-click the correct point on the map, copy the generated coordinate line,
+then paste it into the location's `answer.txt` file.
 
-The searchable question picker deliberately includes only captures and
-locations that do not exist on `origin/main`. The editor refreshes that remote
-branch before listing or saving questions. Once a location is published there,
-the editor treats it as read-only and removes it from the list.
-
-Saving a staged image creates its `src/locations/<id>/` directory and moves the
-image into it as `question.webp`. Browsers cannot modify a Git checkout from the
-deployed website, so saving is available only through the local development
-server.
+The tool runs entirely in the browser. It does not upload the selected image or
+modify any repository files, so using it does not require Node.js or pnpm.
 
 ## Deployment
 

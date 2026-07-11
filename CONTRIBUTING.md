@@ -11,11 +11,10 @@ Thanks for helping expand the RooGuessr location pool.
 4. Run `pnpm check`.
 5. Open a pull request using the provided template.
 
-Maintainers can place new WebP captures in `src/assets/questions/`, run
-`pnpm dev`, and use **Edit answers** to create the final location directory and
-`answer.txt` file. The picker compares local questions with `origin/main` and
-shows only work that has not been published there. Published locations cannot
-be edited through the authoring page.
+Use **Edit answers** on the RooGuessr website to select your local
+`question.webp`, mark its position on the master map, and copy the generated
+coordinate line. Paste that line into the location's `answer.txt` file. The
+tool runs entirely in the browser and does not upload or modify your files.
 
 Please use consistent Dota graphics and camera settings. Hide the HUD, minimap,
 cursor, heroes, particles, and other temporary clues. The Easy crop should be
