@@ -66,7 +66,7 @@ export function renderGame(
     const maximumScore = runLocations.length * MAX_ROUND_SCORE;
 
     app.innerHTML = `
-      <main class="site-shell">
+      <main class="site-shell results-shell">
         <header class="site-header">
           <a class="wordmark" href="/" aria-label="RooGuessr home">
             <span class="wordmark__pin" aria-hidden="true"></span>

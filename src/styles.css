@@ -552,6 +552,18 @@ h2 {
   text-align: center;
 }
 
+.results-shell {
+  height: 100dvh;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.results-shell .game-final {
+  width: 100%;
+  margin: auto;
+}
+
 .game-final h1 {
   max-width: none;
   margin-bottom: 16px;
@@ -586,6 +598,14 @@ h2 {
 .game-final__rounds strong {
   color: #f1d4ae;
   font: 1rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.game-stats .score-value,
+.game-final__rounds .score-value {
+  font-family: "DM Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.04em;
 }
 
 .game-final__actions {
