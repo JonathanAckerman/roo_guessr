@@ -418,10 +418,88 @@ h2 {
   overflow: hidden;
   line-height: 0;
   cursor: default;
+  touch-action: none;
 }
 
 .game-map-wrap--locked {
   cursor: default;
+}
+
+.game-map-magnifier-source,
+.game-map-magnifier {
+  position: absolute;
+  pointer-events: none;
+}
+
+.game-map-magnifier-source[hidden],
+.game-map-magnifier[hidden] {
+  display: none;
+}
+
+.game-map-magnifier-source {
+  z-index: 4;
+  border: 2px solid #f7f2e5;
+  border-radius: 5px;
+  background: rgba(247, 242, 229, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(8, 16, 14, 0.75),
+    0 5px 14px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+}
+
+.game-map-magnifier {
+  z-index: 5;
+  width: clamp(160px, 36%, 252px);
+  max-width: calc(100% - 16px);
+  aspect-ratio: 7 / 5;
+  overflow: hidden;
+  border: 2px solid #f7f2e5;
+  border-radius: 9px;
+  background: #050a08;
+  box-shadow:
+    0 0 0 1px rgba(8, 16, 14, 0.8),
+    0 12px 30px rgba(0, 0, 0, 0.62);
+}
+
+.game-map-magnifier img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  user-select: none;
+}
+
+.game-map-magnifier__reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(8, 16, 14, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(247, 242, 229, 0.95);
+  transform: translate(-50%, -50%);
+}
+
+.game-map-magnifier__reticle::before,
+.game-map-magnifier__reticle::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: #f7f2e5;
+  box-shadow: 0 1px 1px rgba(8, 16, 14, 0.8);
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.game-map-magnifier__reticle::before {
+  width: 8px;
+  height: 1px;
+}
+
+.game-map-magnifier__reticle::after {
+  width: 1px;
+  height: 8px;
 }
 
 .game-map,
@@ -1143,6 +1221,21 @@ button.tool-button:disabled {
     top: 12px;
     width: 6px;
     height: 6px;
+  }
+
+  .game-map-magnifier {
+    width: 112px;
+    border-radius: 6px;
+  }
+
+  .game-map-magnifier-source {
+    border-width: 1px;
+    border-radius: 3px;
+  }
+
+  .game-map-magnifier__reticle {
+    width: 14px;
+    height: 14px;
   }
 
   .game-controls {

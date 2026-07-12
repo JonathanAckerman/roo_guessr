@@ -6,6 +6,11 @@ const SCORES_PER_PAGE = 10;
 const MAX_ROUND_SCORE = 5_000;
 const FORGIVENESS_RADIUS = 0.015;
 const SCORE_DECAY = 8;
+const MAP_MAGNIFIER_ZOOM = 2.5;
+const MAP_MAGNIFIER_GAP = 20;
+const MAP_MAGNIFIER_HOLD_MS = 300;
+const MAP_MAGNIFIER_TOUCH_HOLD_MS = 400;
+const MAP_MAGNIFIER_DRAG_THRESHOLD = 5;
 
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, value));
@@ -184,6 +189,11 @@ export function renderGame(
             </div>
             <div class="game-map-wrap" data-game-map>
               <img class="game-map" src="${mapUrl}" alt="Dota map" draggable="false" />
+              <div class="game-map-magnifier-source" data-map-magnifier-source hidden aria-hidden="true"></div>
+              <div class="game-map-magnifier" data-map-magnifier hidden aria-hidden="true">
+                <img src="${mapUrl}" alt="" draggable="false" data-map-magnifier-image />
+                <span class="game-map-magnifier__reticle"></span>
+              </div>
               <svg class="game-answer-line" viewBox="0 0 100 100" preserveAspectRatio="none" hidden aria-hidden="true">
                 <defs>
                   <clipPath id="answer-line-reveal" clipPathUnits="userSpaceOnUse">
@@ -226,6 +236,9 @@ export function renderGame(
     `;
 
     const map = app.querySelector<HTMLElement>("[data-game-map]");
+    const magnifier = app.querySelector<HTMLElement>("[data-map-magnifier]");
+    const magnifierImage = app.querySelector<HTMLImageElement>("[data-map-magnifier-image]");
+    const magnifierSource = app.querySelector<HTMLElement>("[data-map-magnifier-source]");
     const guessPin = app.querySelector<HTMLElement>("[data-guess-pin]");
     const answerPin = app.querySelector<HTMLElement>("[data-answer-pin]");
     const answerLine = app.querySelector<SVGLineElement>("[data-answer-line]");
@@ -243,9 +256,17 @@ export function renderGame(
     const questionWrap = app.querySelector<HTMLElement>("[data-question-wrap]");
     const questionImage = app.querySelector<HTMLImageElement>("[data-question-image]");
 
-    if (!map || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore || !questionHeading || !questionPrompt || !questionWrap || !questionImage) {
+    if (!map || !magnifier || !magnifierImage || !magnifierSource || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore || !questionHeading || !questionPrompt || !questionWrap || !questionImage) {
       throw new Error("RooGuessr could not initialize the game round.");
     }
+
+    let magnifierPointerId: number | undefined;
+    let magnifierActive = false;
+    let magnifierHoldTimer: number | undefined;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let pointerClientX = 0;
+    let pointerClientY = 0;
 
     const showGuess = (): void => {
       if (!guess) return;
@@ -258,10 +279,63 @@ export function renderGame(
       mapStatus.textContent = "";
     };
 
+    const hideMagnifier = (): void => {
+      if (magnifierHoldTimer !== undefined) window.clearTimeout(magnifierHoldTimer);
+      magnifierHoldTimer = undefined;
+      magnifierPointerId = undefined;
+      magnifierActive = false;
+      magnifier.hidden = true;
+      magnifierSource.hidden = true;
+    };
+
+    const updateMagnifier = (clientX: number, clientY: number): void => {
+      const bounds = map.getBoundingClientRect();
+      const mapWidth = bounds.width;
+      const mapHeight = bounds.height;
+      const pointerX = Math.max(0, Math.min(mapWidth, clientX - bounds.left));
+      const pointerY = Math.max(0, Math.min(mapHeight, clientY - bounds.top));
+      const panelWidth = magnifier.offsetWidth;
+      const panelHeight = magnifier.offsetHeight;
+      const sourceWidth = Math.min(mapWidth, panelWidth / MAP_MAGNIFIER_ZOOM);
+      const sourceHeight = Math.min(mapHeight, panelHeight / MAP_MAGNIFIER_ZOOM);
+      const sourceX = Math.max(sourceWidth / 2, Math.min(mapWidth - sourceWidth / 2, pointerX));
+      const sourceY = Math.max(sourceHeight / 2, Math.min(mapHeight - sourceHeight / 2, pointerY));
+
+      magnifierSource.style.width = `${sourceWidth}px`;
+      magnifierSource.style.height = `${sourceHeight}px`;
+      magnifierSource.style.left = `${sourceX}px`;
+      magnifierSource.style.top = `${sourceY}px`;
+
+      let panelX = pointerX + MAP_MAGNIFIER_GAP;
+      if (panelX + panelWidth > mapWidth) panelX = pointerX - panelWidth - MAP_MAGNIFIER_GAP;
+      let panelY = pointerY - panelHeight - MAP_MAGNIFIER_GAP;
+      if (panelY < 0) panelY = pointerY + MAP_MAGNIFIER_GAP;
+      panelX = Math.max(0, Math.min(Math.max(0, mapWidth - panelWidth), panelX));
+      panelY = Math.max(0, Math.min(Math.max(0, mapHeight - panelHeight), panelY));
+
+      magnifier.style.left = `${panelX}px`;
+      magnifier.style.top = `${panelY}px`;
+      magnifierImage.style.width = `${mapWidth * MAP_MAGNIFIER_ZOOM}px`;
+      magnifierImage.style.height = `${mapHeight * MAP_MAGNIFIER_ZOOM}px`;
+      magnifierImage.style.left = `${(panelWidth / 2) - (sourceX * MAP_MAGNIFIER_ZOOM)}px`;
+      magnifierImage.style.top = `${(panelHeight / 2) - (sourceY * MAP_MAGNIFIER_ZOOM)}px`;
+    };
+
+    const showMagnifier = (): void => {
+      if (locked || magnifierPointerId === undefined || magnifierActive) return;
+      if (magnifierHoldTimer !== undefined) window.clearTimeout(magnifierHoldTimer);
+      magnifierHoldTimer = undefined;
+      magnifierActive = true;
+      magnifier.hidden = false;
+      magnifierSource.hidden = false;
+      updateMagnifier(pointerClientX, pointerClientY);
+    };
+
     const lockIn = (timedOut: boolean): void => {
       if (locked) return;
       locked = true;
       stopTimer();
+      hideMagnifier();
 
       const score = guess ? scoreGuess(guess, location.answer) : 0;
       totalScore += score;
@@ -347,14 +421,51 @@ export function renderGame(
       if (millisecondsLeft <= 0) lockIn(true);
     };
 
-    map.addEventListener("click", (event) => {
-      if (locked) return;
+    map.addEventListener("pointerdown", (event) => {
+      if (locked || !event.isPrimary || event.button !== 0 || magnifierPointerId !== undefined) return;
+      event.preventDefault();
+      magnifierPointerId = event.pointerId;
+      pointerStartX = event.clientX;
+      pointerStartY = event.clientY;
+      pointerClientX = event.clientX;
+      pointerClientY = event.clientY;
+      map.setPointerCapture(event.pointerId);
+      const holdDelay = event.pointerType === "touch"
+        ? MAP_MAGNIFIER_TOUCH_HOLD_MS
+        : MAP_MAGNIFIER_HOLD_MS;
+      magnifierHoldTimer = window.setTimeout(showMagnifier, holdDelay);
+    });
+
+    map.addEventListener("pointermove", (event) => {
+      if (event.pointerId !== magnifierPointerId) return;
+      pointerClientX = event.clientX;
+      pointerClientY = event.clientY;
+      const dragDistance = Math.hypot(event.clientX - pointerStartX, event.clientY - pointerStartY);
+      if (!magnifierActive && dragDistance >= MAP_MAGNIFIER_DRAG_THRESHOLD) showMagnifier();
+      if (magnifierActive) updateMagnifier(event.clientX, event.clientY);
+    });
+
+    map.addEventListener("pointerup", (event) => {
+      if (event.pointerId !== magnifierPointerId) return;
+      const wasMagnifying = magnifierActive;
       const bounds = map.getBoundingClientRect();
-      guess = {
+      const clickPoint: NormalizedPoint = {
         x: clamp((event.clientX - bounds.left) / bounds.width),
         y: clamp(1 - (event.clientY - bounds.top) / bounds.height),
       };
+      hideMagnifier();
+      if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
+      if (locked || wasMagnifying) return;
+      guess = clickPoint;
       showGuess();
+    });
+
+    map.addEventListener("pointercancel", (event) => {
+      if (event.pointerId === magnifierPointerId) hideMagnifier();
+    });
+
+    map.addEventListener("lostpointercapture", (event) => {
+      if (event.pointerId === magnifierPointerId) hideMagnifier();
     });
 
     lockButton.addEventListener("click", () => lockIn(false));
