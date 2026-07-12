@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
 
 :root {
   --pin-shape: path("M 15 42 C 14 37 12 32 10 29.14 C 4.2 27.1 0 21.55 0 15 C 0 6.72 6.72 0 15 0 C 23.28 0 30 6.72 30 15 C 30 21.55 25.8 27.1 20 29.14 C 18 32 16 37 15 42 Z");
@@ -168,7 +168,7 @@ h1 {
   max-width: 720px;
   margin-bottom: 28px;
   color: #f7f2e5;
-  font-family: "Fraunces", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(3.15rem, 7.3vw, 6.65rem);
   line-height: 0.93;
   letter-spacing: -0.055em;
@@ -302,7 +302,7 @@ h1 {
 h2 {
   margin-bottom: 0;
   color: #f7f2e5;
-  font-family: "Fraunces", serif;
+  font-family: "DM Sans", sans-serif;
   font-size: clamp(2rem, 4vw, 3.25rem);
   letter-spacing: -0.04em;
 }
