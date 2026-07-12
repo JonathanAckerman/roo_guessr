@@ -135,7 +135,6 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       grabY: QUESTION_HEIGHT / 2,
     },
   };
-  let activeKind: ImageKind = "question";
   let locationId: string | undefined;
   let answer: NormalizedPoint | undefined;
 
@@ -192,25 +191,10 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           </div>
         </article>
 
-        <article class="editor-card editor-crop-card">
+        <article class="editor-card editor-crop-card" data-crop-panel="question">
           <div class="editor-card__heading editor-crop-heading">
-            <div class="editor-crop-tabs" role="tablist" aria-label="Crop to edit">
-              <button
-                class="editor-crop-tab editor-crop-tab--active"
-                type="button"
-                role="tab"
-                aria-selected="true"
-                data-crop-tab="question"
-              >Question crop</button>
-              <button
-                class="editor-crop-tab"
-                type="button"
-                role="tab"
-                aria-selected="false"
-                data-crop-tab="answer"
-              >Answer crop</button>
-            </div>
-            <span data-crop-name>${QUESTION_WIDTH}×${QUESTION_HEIGHT}</span>
+            <span>Question crop</span>
+            <span data-crop-name="question">${QUESTION_WIDTH}×${QUESTION_HEIGHT}</span>
           </div>
           <div class="editor-question-wrap">
             <canvas
@@ -219,12 +203,32 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
               height="${CROP_PREVIEW_HEIGHT}"
               role="img"
               aria-label="Question crop selector"
-              data-crop-canvas
+              data-crop-canvas="question"
               hidden
             ></canvas>
-            <p class="editor-empty" data-crop-empty>Choose a question image to begin.</p>
+            <p class="editor-empty" data-crop-empty="question">Choose a question image to begin.</p>
           </div>
-          <p class="editor-crop-note" data-crop-note hidden></p>
+          <p class="editor-crop-note" data-crop-note="question" hidden></p>
+        </article>
+
+        <article class="editor-card editor-crop-card" data-crop-panel="answer">
+          <div class="editor-card__heading editor-crop-heading">
+            <span>Answer crop</span>
+            <span data-crop-name="answer">${QUESTION_WIDTH}×${QUESTION_HEIGHT}</span>
+          </div>
+          <div class="editor-question-wrap">
+            <canvas
+              class="editor-crop-canvas"
+              width="${CROP_PREVIEW_WIDTH}"
+              height="${CROP_PREVIEW_HEIGHT}"
+              role="img"
+              aria-label="Answer crop selector"
+              data-crop-canvas="answer"
+              hidden
+            ></canvas>
+            <p class="editor-empty" data-crop-empty="answer">Choose an answer image to begin.</p>
+          </div>
+          <p class="editor-crop-note" data-crop-note="answer" hidden></p>
         </article>
       </section>
 
@@ -272,16 +276,24 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     question: app.querySelector<HTMLElement>('[data-image-error="question"]'),
     answer: app.querySelector<HTMLElement>('[data-image-error="answer"]'),
   };
-  const cropTabs: Record<ImageKind, HTMLButtonElement | null> = {
-    question: app.querySelector<HTMLButtonElement>('[data-crop-tab="question"]'),
-    answer: app.querySelector<HTMLButtonElement>('[data-crop-tab="answer"]'),
+  const cropCanvases: Record<ImageKind, HTMLCanvasElement | null> = {
+    question: app.querySelector<HTMLCanvasElement>('[data-crop-canvas="question"]'),
+    answer: app.querySelector<HTMLCanvasElement>('[data-crop-canvas="answer"]'),
+  };
+  const cropNotes: Record<ImageKind, HTMLElement | null> = {
+    question: app.querySelector<HTMLElement>('[data-crop-note="question"]'),
+    answer: app.querySelector<HTMLElement>('[data-crop-note="answer"]'),
+  };
+  const cropEmpties: Record<ImageKind, HTMLElement | null> = {
+    question: app.querySelector<HTMLElement>('[data-crop-empty="question"]'),
+    answer: app.querySelector<HTMLElement>('[data-crop-empty="answer"]'),
+  };
+  const cropNames: Record<ImageKind, HTMLElement | null> = {
+    question: app.querySelector<HTMLElement>('[data-crop-name="question"]'),
+    answer: app.querySelector<HTMLElement>('[data-crop-name="answer"]'),
   };
   const map = app.querySelector<HTMLImageElement>(".editor-map");
   const pin = app.querySelector<HTMLDivElement>(".editor-pin");
-  const cropCanvas = app.querySelector<HTMLCanvasElement>("[data-crop-canvas]");
-  const cropNote = app.querySelector<HTMLElement>("[data-crop-note]");
-  const cropEmpty = app.querySelector<HTMLElement>("[data-crop-empty]");
-  const cropName = app.querySelector<HTMLElement>("[data-crop-name]");
   const coordinateLabel = app.querySelector<HTMLElement>("[data-coordinate-label]");
   const locationIdText = app.querySelector<HTMLElement>("[data-location-id]");
   const answerText = app.querySelector<HTMLElement>("[data-answer-text]");
@@ -297,14 +309,16 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     || !fileInputs.answer
     || !fileErrors.question
     || !fileErrors.answer
-    || !cropTabs.question
-    || !cropTabs.answer
+    || !cropCanvases.question
+    || !cropCanvases.answer
+    || !cropNotes.question
+    || !cropNotes.answer
+    || !cropEmpties.question
+    || !cropEmpties.answer
+    || !cropNames.question
+    || !cropNames.answer
     || !map
     || !pin
-    || !cropCanvas
-    || !cropNote
-    || !cropEmpty
-    || !cropName
     || !coordinateLabel
     || !locationIdText
     || !answerText
@@ -320,7 +334,10 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
 
   const imageInputs = fileInputs as Record<ImageKind, HTMLInputElement>;
   const imageErrors = fileErrors as Record<ImageKind, HTMLElement>;
-  const imageTabs = cropTabs as Record<ImageKind, HTMLButtonElement>;
+  const imageCanvases = cropCanvases as Record<ImageKind, HTMLCanvasElement>;
+  const imageCropNotes = cropNotes as Record<ImageKind, HTMLElement>;
+  const imageCropEmpties = cropEmpties as Record<ImageKind, HTMLElement>;
+  const imageCropNames = cropNames as Record<ImageKind, HTMLElement>;
 
   howToOpenButton.addEventListener("click", () => {
     howToDialog.showModal();
@@ -375,38 +392,39 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     updateActionState();
   };
 
-  const previewMetrics = (source: SourceImage): {
+  const previewMetrics = (canvas: HTMLCanvasElement, source: SourceImage): {
     scale: number;
     imageX: number;
     imageY: number;
     imageWidth: number;
     imageHeight: number;
   } => {
-    const scale = Math.min(cropCanvas.width / source.width, cropCanvas.height / source.height);
+    const scale = Math.min(canvas.width / source.width, canvas.height / source.height);
     const imageWidth = source.width * scale;
     const imageHeight = source.height * scale;
     return {
       scale,
-      imageX: (cropCanvas.width - imageWidth) / 2,
-      imageY: (cropCanvas.height - imageHeight) / 2,
+      imageX: (canvas.width - imageWidth) / 2,
+      imageY: (canvas.height - imageHeight) / 2,
       imageWidth,
       imageHeight,
     };
   };
 
-  const drawCropPreview = (): void => {
-    const source = cropStates[activeKind].source;
+  const drawCropPreview = (kind: ImageKind): void => {
+    const source = cropStates[kind].source;
     if (!source) return;
-    const context = cropCanvas.getContext("2d");
+    const canvas = imageCanvases[kind];
+    const context = canvas.getContext("2d");
     if (!context) return;
-    const metrics = previewMetrics(source);
+    const metrics = previewMetrics(canvas, source);
     const cropLeft = metrics.imageX + source.cropX * metrics.scale;
     const cropTop = metrics.imageY + source.cropY * metrics.scale;
     const cropWidth = QUESTION_WIDTH * metrics.scale;
     const cropHeight = QUESTION_HEIGHT * metrics.scale;
 
     context.fillStyle = "#050a08";
-    context.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+    context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(source.image, metrics.imageX, metrics.imageY, metrics.imageWidth, metrics.imageHeight);
     context.fillStyle = "rgba(0, 0, 0, 0.62)";
     context.fillRect(metrics.imageX, metrics.imageY, metrics.imageWidth, metrics.imageHeight);
@@ -426,10 +444,10 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     context.strokeRect(cropLeft + 1.5, cropTop + 1.5, cropWidth - 3, cropHeight - 3);
   };
 
-  const updateCropNote = (): void => {
-    const source = cropStates[activeKind].source;
+  const updateCropNote = (kind: ImageKind): void => {
+    const source = cropStates[kind].source;
     if (!source) return;
-    cropNote.textContent = source.width === QUESTION_WIDTH && source.height === QUESTION_HEIGHT
+    imageCropNotes[kind].textContent = source.width === QUESTION_WIDTH && source.height === QUESTION_HEIGHT
       ? "This image already matches the 1400×1000 crop."
       : `Drag the 1400×1000 box to choose the exported crop. Offset: ${source.cropX}px left, ${source.cropY}px top.`;
   };
@@ -439,44 +457,30 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     if (!source) return;
     source.cropX = Math.round(clampBetween(x, 0, source.width - QUESTION_WIDTH));
     source.cropY = Math.round(clampBetween(y, 0, source.height - QUESTION_HEIGHT));
-    if (kind === activeKind) {
-      updateCropNote();
-      drawCropPreview();
-    }
+    updateCropNote(kind);
+    drawCropPreview(kind);
   };
 
-  const renderActiveCrop = (): void => {
-    const source = cropStates[activeKind].source;
-    const label = imageKindLabel(activeKind);
+  const renderCrop = (kind: ImageKind): void => {
+    const source = cropStates[kind].source;
+    const canvas = imageCanvases[kind];
+    const note = imageCropNotes[kind];
+    const empty = imageCropEmpties[kind];
+    const name = imageCropNames[kind];
 
-    for (const kind of ["question", "answer"] as const) {
-      const selected = kind === activeKind;
-      imageTabs[kind].classList.toggle("editor-crop-tab--active", selected);
-      imageTabs[kind].setAttribute("aria-selected", String(selected));
-      imageTabs[kind].classList.toggle("editor-crop-tab--ready", Boolean(cropStates[kind].source));
-    }
-
-    cropCanvas.setAttribute("aria-label", `${label} crop selector`);
-    cropCanvas.hidden = !source;
-    cropNote.hidden = !source;
-    cropEmpty.hidden = Boolean(source);
+    canvas.hidden = !source;
+    note.hidden = !source;
+    empty.hidden = Boolean(source);
 
     if (!source) {
-      cropName.textContent = `${QUESTION_WIDTH}×${QUESTION_HEIGHT}`;
-      cropEmpty.textContent = `Choose an ${activeKind} image to begin.`;
+      name.textContent = `${QUESTION_WIDTH}×${QUESTION_HEIGHT}`;
+      empty.textContent = `Choose ${kind === "question" ? "a" : "an"} ${kind} image to begin.`;
       return;
     }
 
-    cropName.textContent = `${source.name} · ${source.width}×${source.height}`;
-    updateCropNote();
-    drawCropPreview();
-  };
-
-  const setActiveKind = (kind: ImageKind): void => {
-    activeKind = kind;
-    cropStates.question.dragging = false;
-    cropStates.answer.dragging = false;
-    renderActiveCrop();
+    name.textContent = `${source.name} · ${source.width}×${source.height}`;
+    updateCropNote(kind);
+    drawCropPreview(kind);
   };
 
   const clearImage = (kind: ImageKind): void => {
@@ -489,7 +493,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       locationIdText.textContent = "—";
       updatePin(undefined);
     }
-    renderActiveCrop();
+    renderCrop(kind);
     updateActionState();
   };
 
@@ -514,7 +518,6 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     clearImage(kind);
     setFileError(kind);
     input.disabled = true;
-    setActiveKind(kind);
     setStatus(`Reading ${kind} image…`);
 
     try {
@@ -528,7 +531,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       locationId ??= crypto.randomUUID();
       locationIdText.textContent = locationId;
       setCrop(kind, loadedImage.cropX, loadedImage.cropY);
-      renderActiveCrop();
+      renderCrop(kind);
       describeNextStep();
     } catch (error) {
       const message = error instanceof Error ? error.message : "The image could not be prepared.";
@@ -541,26 +544,32 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     }
   };
 
-  const sourcePointFromPointer = (event: PointerEvent): { x: number; y: number } | undefined => {
-    const source = cropStates[activeKind].source;
+  const sourcePointFromPointer = (
+    kind: ImageKind,
+    event: PointerEvent,
+  ): { x: number; y: number } | undefined => {
+    const source = cropStates[kind].source;
     if (!source) return;
-    const bounds = cropCanvas.getBoundingClientRect();
-    const canvasX = (event.clientX - bounds.left) * cropCanvas.width / bounds.width;
-    const canvasY = (event.clientY - bounds.top) * cropCanvas.height / bounds.height;
-    const metrics = previewMetrics(source);
+    const canvas = imageCanvases[kind];
+    const bounds = canvas.getBoundingClientRect();
+    const canvasX = (event.clientX - bounds.left) * canvas.width / bounds.width;
+    const canvasY = (event.clientY - bounds.top) * canvas.height / bounds.height;
+    const metrics = previewMetrics(canvas, source);
     return {
       x: (canvasX - metrics.imageX) / metrics.scale,
       y: (canvasY - metrics.imageY) / metrics.scale,
     };
   };
 
-  const updateCropFromPointer = (event: PointerEvent): void => {
-    const state = cropStates[activeKind];
-    const point = sourcePointFromPointer(event);
-    if (point) setCrop(activeKind, point.x - state.grabX, point.y - state.grabY);
+  const updateCropFromPointer = (kind: ImageKind, event: PointerEvent): void => {
+    const state = cropStates[kind];
+    const point = sourcePointFromPointer(kind, event);
+    if (point) setCrop(kind, point.x - state.grabX, point.y - state.grabY);
   };
 
   for (const kind of ["question", "answer"] as const) {
+    const canvas = imageCanvases[kind];
+
     imageInputs[kind].addEventListener("change", () => {
       const file = imageInputs[kind].files?.[0];
       if (file) {
@@ -572,38 +581,36 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       }
     });
 
-    imageTabs[kind].addEventListener("click", () => setActiveKind(kind));
+    canvas.addEventListener("pointerdown", (event) => {
+      const state = cropStates[kind];
+      const source = state.source;
+      if (!source) return;
+      const point = sourcePointFromPointer(kind, event);
+      if (!point) return;
+      const insideCrop = point.x >= source.cropX
+        && point.x <= source.cropX + QUESTION_WIDTH
+        && point.y >= source.cropY
+        && point.y <= source.cropY + QUESTION_HEIGHT;
+      state.grabX = insideCrop ? point.x - source.cropX : QUESTION_WIDTH / 2;
+      state.grabY = insideCrop ? point.y - source.cropY : QUESTION_HEIGHT / 2;
+      state.dragging = true;
+      canvas.setPointerCapture(event.pointerId);
+      updateCropFromPointer(kind, event);
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+      if (cropStates[kind].dragging) updateCropFromPointer(kind, event);
+    });
+
+    canvas.addEventListener("pointerup", (event) => {
+      cropStates[kind].dragging = false;
+      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      cropStates[kind].dragging = false;
+    });
   }
-
-  cropCanvas.addEventListener("pointerdown", (event) => {
-    const state = cropStates[activeKind];
-    const source = state.source;
-    if (!source) return;
-    const point = sourcePointFromPointer(event);
-    if (!point) return;
-    const insideCrop = point.x >= source.cropX
-      && point.x <= source.cropX + QUESTION_WIDTH
-      && point.y >= source.cropY
-      && point.y <= source.cropY + QUESTION_HEIGHT;
-    state.grabX = insideCrop ? point.x - source.cropX : QUESTION_WIDTH / 2;
-    state.grabY = insideCrop ? point.y - source.cropY : QUESTION_HEIGHT / 2;
-    state.dragging = true;
-    cropCanvas.setPointerCapture(event.pointerId);
-    updateCropFromPointer(event);
-  });
-
-  cropCanvas.addEventListener("pointermove", (event) => {
-    if (cropStates[activeKind].dragging) updateCropFromPointer(event);
-  });
-
-  cropCanvas.addEventListener("pointerup", (event) => {
-    cropStates[activeKind].dragging = false;
-    if (cropCanvas.hasPointerCapture(event.pointerId)) cropCanvas.releasePointerCapture(event.pointerId);
-  });
-
-  cropCanvas.addEventListener("pointercancel", () => {
-    cropStates[activeKind].dragging = false;
-  });
 
   map.addEventListener("click", (event) => {
     if (event.button !== 0 || (!cropStates.question.source && !cropStates.answer.source)) return;

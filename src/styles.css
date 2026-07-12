@@ -1105,7 +1105,7 @@ html.how-to-open {
 
 .editor-workspace {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
   align-items: start;
 }
@@ -1137,41 +1137,12 @@ html.how-to-open {
   align-items: center;
 }
 
-.editor-crop-heading > span {
+.editor-crop-heading > span:last-child {
   min-width: 0;
   overflow: hidden;
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.editor-crop-tabs {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 5px;
-}
-
-.editor-crop-tab {
-  padding: 5px 8px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: #71857a;
-  background: transparent;
-  font-size: inherit;
-  font-weight: 700;
-  letter-spacing: inherit;
-  text-transform: uppercase;
-  cursor: default;
-}
-
-.editor-crop-tab--ready {
-  color: #aab9af;
-}
-
-.editor-crop-tab--active {
-  border-color: rgba(241, 212, 174, 0.35);
-  color: #f1d4ae;
-  background: rgba(241, 212, 174, 0.08);
 }
 
 .editor-map-wrap {
@@ -1316,6 +1287,16 @@ button.tool-button:disabled {
 
 .editor-footer-link:hover {
   color: #f1d4ae;
+}
+
+@media (max-width: 1100px) {
+  .editor-workspace {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-workspace > .editor-card:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 940px) {

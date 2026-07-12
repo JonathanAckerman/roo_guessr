@@ -25,6 +25,8 @@ I won't bore you with the details of how it works, only that the public website 
 
 ## Dota Console Commands
 ```text
+// Use all these in order
+
 sv_cheats 1                       // enables cheats
 dota_camera_allow_freecam 1       // enables you to toggle free camera
 dota_toggle_free_camera           // actually toggles the free camera
@@ -35,9 +37,6 @@ dota_daynightcycle_toggle         // daytime preferred so there's no clouds
 r_farz 100000                     // lets you see the whole map at once
 freecamera_max_speed 1000         // if you want to change the camera speed
 hud_toggle_visibility             // toggles all HUD visibility
-
-disconnect                        // leave the lobby, if needed
-quit                              // quit Dota entirely
 ```
 
 **NOTE:** some of these don't auto-complete in the text box but will work anyways
