@@ -237,6 +237,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           <p data-editor-status>Choose a question image and an answer image to begin.</p>
         </div>
         <div class="editor-actions">
+          <button class="tool-button" type="button" data-reset-editor disabled>Reset</button>
           <button class="tool-button" type="button" data-copy-answer disabled>Copy answer</button>
           <button class="start-button" type="button" data-download-location disabled>Export ZIP</button>
         </div>
@@ -295,6 +296,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const locationIdText = app.querySelector<HTMLElement>("[data-location-id]");
   const answerText = app.querySelector<HTMLElement>("[data-answer-text]");
   const status = app.querySelector<HTMLElement>("[data-editor-status]");
+  const resetButton = app.querySelector<HTMLButtonElement>("[data-reset-editor]");
   const copyButton = app.querySelector<HTMLButtonElement>("[data-copy-answer]");
   const downloadButton = app.querySelector<HTMLButtonElement>("[data-download-location]");
   const howToOpenButton = app.querySelector<HTMLButtonElement>("[data-how-to-open]");
@@ -320,6 +322,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     || !locationIdText
     || !answerText
     || !status
+    || !resetButton
     || !copyButton
     || !downloadButton
     || !howToOpenButton
@@ -363,6 +366,10 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   };
 
   const updateActionState = (): void => {
+    resetButton.disabled = !cropStates.question.source
+      && !cropStates.answer.source
+      && !locationId
+      && !answer;
     copyButton.disabled = !answer;
     downloadButton.disabled = !(
       cropStates.question.source
@@ -494,6 +501,18 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     updateActionState();
   };
 
+  const resetEditor = (message: string): void => {
+    for (const kind of ["question", "answer"] as const) {
+      cropStates[kind].selectionVersion += 1;
+      imageInputs[kind].disabled = false;
+      imageInputs[kind].value = "";
+      setFileError(kind);
+      clearImage(kind);
+    }
+    copyButton.textContent = "Copy answer";
+    setStatus(message);
+  };
+
   const describeNextStep = (): void => {
     if (!cropStates.question.source && !cropStates.answer.source) {
       setStatus("Choose a question image and an answer image to begin.");
@@ -619,6 +638,10 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     describeNextStep();
   });
 
+  resetButton.addEventListener("click", () => {
+    resetEditor("Editor reset. Choose a question image and an answer image to begin.");
+  });
+
   copyButton.addEventListener("click", async () => {
     if (!answer) return;
 
@@ -638,6 +661,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     const questionSource = cropStates.question.source;
     const answerSource = cropStates.answer.source;
     if (!questionSource || !answerSource || !locationId || !answer) return;
+    const exportedLocationId = locationId;
     downloadButton.disabled = true;
     setStatus("Building location ZIP…");
 
@@ -652,8 +676,9 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
         "answer.txt": strToU8(`${formatAnswer(answer)}\r\n`),
       }, { level: 0 });
       const archiveBuffer = archive.slice().buffer as ArrayBuffer;
-      downloadBlob(new Blob([archiveBuffer], { type: "application/zip" }), `${locationId}.zip`);
-      setStatus(`Downloaded ${locationId}.zip. Extract its contents into src/locations/${locationId}/.`);
+      downloadBlob(new Blob([archiveBuffer], { type: "application/zip" }), `${exportedLocationId}.zip`);
+
+      resetEditor(`Downloaded ${exportedLocationId}.zip. Choose new images to build another location.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "The location ZIP could not be created.", true);
     } finally {
