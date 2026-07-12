@@ -44,7 +44,7 @@ function render(): void {
     ? `
       <div class="game-option-control" data-question-count-control>
         <div class="game-option-control__heading">
-          <label for="question-count">Questions</label>
+          <label for="question-count">Total questions</label>
           <output for="question-count" data-question-count-output>${questionCountLabel(defaultQuestionCount)}</output>
         </div>
         <input
@@ -66,7 +66,7 @@ function render(): void {
     `
     : `
       <div class="game-option-control game-option-control--fixed" data-question-count-control>
-        <span>Questions</span>
+        <span>Total questions</span>
         <strong data-question-count-output>
           ${canStart ? `${questionCountLabel(maximumQuestionCount)} · all available` : "No locations available"}
         </strong>
@@ -103,7 +103,7 @@ function render(): void {
               ${questionCountControl}
               <div class="game-option-control" data-round-duration-control>
                 <div class="game-option-control__heading">
-                  <label for="round-duration">Time</label>
+                  <label for="round-duration">Time per question</label>
                   <output for="round-duration" data-round-duration-output>${durationLabel(DEFAULT_ROUND_DURATION_SECONDS)}</output>
                 </div>
                 <input
