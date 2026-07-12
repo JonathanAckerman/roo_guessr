@@ -6,18 +6,20 @@ Thanks for helping expand the RooGuessr location pool.
 
 1. Fork the repository.
 2. Create a branch for your location.
-3. Open **Edit answers** on the RooGuessr website, choose your screenshot, and
-   mark its position on the map.
-4. Download the generated ZIP, create `src/locations/<zip-name>/`, and extract
-   the ZIP's two files into that folder.
+3. Open **Add your own** on the RooGuessr website. Choose a question screenshot
+   and an answer screenshot, position each crop independently, and mark the
+   location's position on the map.
+4. Export the generated ZIP, create `src/locations/<zip-name>/`, and extract the
+   ZIP's three files directly into that folder: `question.webp`, `answer.webp`,
+   and `answer.txt`.
 5. Open a pull request using the provided template.
 
-The builder accepts PNG, JPG, and WebP inputs that are at least 1400×1000. Its
-draggable crop box creates the required 1400×1000 WebP, and it creates
+The builder accepts PNG, JPG, and WebP inputs that are at least 1400×1000.
+Each draggable crop creates a 1400×1000 WebP, and the builder creates
 `answer.txt` automatically. It runs entirely in the browser and does not upload
-your source image. If you have the development tools installed, run `pnpm check`
-before submitting; GitHub Actions performs the same validation on the pull
-request.
+your source images. If you have the development tools installed, run
+`pnpm check` before submitting; GitHub Actions performs the same validation on
+the pull request.
 
 See the documented [location format](src/locations/README.md) for the exact
 files accepted by the repository.
@@ -29,6 +31,11 @@ recognizable without making the answer immediate.
 The maintainer may adjust coordinates or image framing during review.
 Submissions that are visually ambiguous or too similar to existing locations
 may be declined.
+
+Locations created before answer-image support temporarily fall back to their
+question image after a guess. New submissions must include all three files;
+the legacy exception will be removed as those older locations receive authored
+answer images.
 
 ## Code contributions
 

@@ -210,8 +210,63 @@ h1 {
   left: 0;
   z-index: 2;
   display: flex;
+  gap: 20px;
+  align-items: flex-end;
   justify-content: center;
   padding: 28px;
+}
+
+.question-count-control {
+  width: min(300px, 100%);
+  padding: 10px 14px 8px;
+  border: 1px solid rgba(237, 243, 232, 0.2);
+  border-radius: 9px;
+  color: #f4ecdc;
+  background: rgba(8, 16, 14, 0.82);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+.question-count-control__heading,
+.question-count-control__limits,
+.question-count-control--fixed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.question-count-control__heading label,
+.question-count-control--fixed > span {
+  color: #91a89a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.question-count-control__heading output,
+.question-count-control--fixed strong {
+  color: #f7f2e5;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.question-count-control__range {
+  display: block;
+  width: 100%;
+  margin: 7px 0 1px;
+  accent-color: #e78b59;
+  cursor: default;
+}
+
+.question-count-control__limits {
+  color: #71857a;
+  font-size: 0.62rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.question-count-control--fixed {
+  min-height: 54px;
 }
 
 .section-number {
@@ -386,6 +441,20 @@ h2 {
 .game-question {
   height: 100%;
   object-fit: cover;
+}
+
+.game-question--answer {
+  animation: answer-image-reveal 260ms ease-out both;
+}
+
+@keyframes answer-image-reveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .game-answer-line {
@@ -615,6 +684,28 @@ h2 {
   justify-content: center;
 }
 
+.game-final__pagination {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  margin: -22px 0 26px;
+  color: #83958a;
+  font-size: 0.72rem;
+}
+
+.game-final__pagination[hidden] {
+  display: none;
+}
+
+.game-final__pagination .tool-button {
+  min-height: 34px;
+}
+
+.game-final__pagination .tool-button:disabled {
+  opacity: 0.4;
+}
+
 .editor-intro {
   display: block;
   padding: clamp(24px, 4vh, 36px) 0 36px;
@@ -630,9 +721,9 @@ h2 {
 
 .editor-toolbar {
   display: grid;
-  grid-template-columns: auto minmax(220px, 1fr);
-  gap: 12px 16px;
-  align-items: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
   margin-bottom: 20px;
   padding: 16px 18px;
   border: 1px solid rgba(237, 243, 232, 0.12);
@@ -646,6 +737,12 @@ h2 {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.editor-source-control {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
 }
 
 .editor-toolbar input {
@@ -677,6 +774,13 @@ h2 {
   cursor: pointer;
 }
 
+.editor-file-error {
+  margin: 0;
+  color: #ef8d79;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .editor-workspace {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -704,6 +808,48 @@ h2 {
 
 .editor-card__heading span:first-child {
   color: #f1d4ae;
+}
+
+.editor-crop-heading {
+  gap: 14px;
+  align-items: center;
+}
+
+.editor-crop-heading > span {
+  min-width: 0;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-crop-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.editor-crop-tab {
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #71857a;
+  background: transparent;
+  font-size: inherit;
+  font-weight: 700;
+  letter-spacing: inherit;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+.editor-crop-tab--ready {
+  color: #aab9af;
+}
+
+.editor-crop-tab--active {
+  border-color: rgba(241, 212, 174, 0.35);
+  color: #f1d4ae;
+  background: rgba(241, 212, 174, 0.08);
 }
 
 .editor-map-wrap {
@@ -875,6 +1021,15 @@ button.tool-button:disabled {
   .editor-toolbar label:not(:first-child) {
     margin-top: 8px;
   }
+
+  .map-window__actions {
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .question-count-control {
+    width: min(220px, 60%);
+  }
 }
 
 @media (max-width: 560px) {
@@ -919,6 +1074,24 @@ button.tool-button:disabled {
   .start-button {
     width: 100%;
     min-width: 0;
+  }
+
+  .map-window__actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 0.75fr);
+    align-items: end;
+  }
+
+  .question-count-control {
+    width: 100%;
+  }
+
+  .question-count-control__heading {
+    gap: 6px;
+  }
+
+  .question-count-control__heading output {
+    font-size: 0.72rem;
   }
 
   .game-header {

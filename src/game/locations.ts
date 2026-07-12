@@ -6,7 +6,8 @@ export interface NormalizedPoint {
 export interface Location {
   id: string;
   answer: NormalizedPoint;
-  imageUrl: string;
+  questionImageUrl: string;
+  answerImageUrl?: string;
 }
 
 const answerModules = import.meta.glob<string>("../locations/*/answer.txt", {
@@ -15,7 +16,13 @@ const answerModules = import.meta.glob<string>("../locations/*/answer.txt", {
   import: "default",
 });
 
-const imageModules = import.meta.glob<string>("../locations/*/question.webp", {
+const questionImageModules = import.meta.glob<string>("../locations/*/question.webp", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+
+const answerImageModules = import.meta.glob<string>("../locations/*/answer.webp", {
   eager: true,
   query: "?url",
   import: "default",
@@ -35,16 +42,18 @@ export const locations: Location[] = Object.entries(answerModules)
   .map(([answerPath, answerText]) => {
     const directoryMatch = answerPath.match(/\/([^/]+)\/answer\.txt$/);
     const imagePath = answerPath.replace(/answer\.txt$/, "question.webp");
-    const imageUrl = imageModules[imagePath];
+    const answerImagePath = answerPath.replace(/answer\.txt$/, "answer.webp");
+    const questionImageUrl = questionImageModules[imagePath];
 
-    if (!directoryMatch || !imageUrl) {
+    if (!directoryMatch || !questionImageUrl) {
       throw new Error(`Invalid location directory or missing question.webp for ${answerPath}`);
     }
 
     return {
       id: directoryMatch[1],
       answer: parseAnswer(answerPath, answerText),
-      imageUrl,
+      questionImageUrl,
+      answerImageUrl: answerImageModules[answerImagePath],
     };
   })
   .sort((left, right) => left.id.localeCompare(right.id));

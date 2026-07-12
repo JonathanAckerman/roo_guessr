@@ -8,10 +8,10 @@ This is a guide which you can follow *in order* to add your own locations to the
 ## Forking the repo on GitHub
 This project is on GitHub's servers somewhere and it helps people collaborate on projects. I control the project and approve your new locations before it actually gets on the website (I won't do much curating though. I just check that it is correct, so have fun making new locations!) 
 
-I won't bore you with the details of how it works, only that the public website exists on a server and you will be making a copy of the project on your own computer. You edit it and then send your changes to me to pull into the public website.
+I won't bore you with the details of how it works, only that the public website exists on a server and you will be making a copy of the project under your own GitHub account. You edit that copy through the GitHub website and then send your changes to me to pull into the public website. Nothing needs to be installed or downloaded for this part.
 
 1) Go to `github.com/JonathanAckerman/roo_guessr`
-2) In the top right there's a list of buttons: Pin, Watch, *Fork*, Star. Click `Fork` then `Create fork` (you don't need to change any settings). Creating a fork creates a copy of RooGuessr under your GitHub account. Nothing is installed or downloaded.
+2) In the top right there's a list of buttons: Pin, Watch, *Fork*, Star. Click `Fork` then `Create fork` (you don't need to change any settings). Creating a fork creates a copy of RooGuessr under your GitHub account. Nothing is installed or downloaded, and GitHub will bring you straight to the top level of your fork.
 
 ## Getting set up to take screenshots in Dota
 0) Open dota
@@ -54,11 +54,11 @@ Hold Shift        = camera moves faster
 ## Using the RooGuessr editor
 1) To make it easier create a folder somewhere on your computer to save/extract all zips into. Something like `C:/Users/.../Downloads/my-new-locations`
 2) Go to `rooguessr.peasantroad.com` and click the "Add your own" button in the top right of the main page to be brought to the editor page
-3) Click "Choose question" and select your close up screenshot. This is what we will ask the player.
-4) Click "Choose answer" and select your context screenshot. This is what we show after they guess.
-5) Left click on the map to choose where the answer pin will go (this is why you wrote down a reminder note for where it is)
-6) Click "Export Zip" and save it to your folder from step 1
-7) Extract the zip.
+3) Under `Question image`, choose your close-up screenshot. This is what we will ask the player. If it is larger than 1400x1000, drag the crop box to frame it.
+4) Under `Answer image`, choose your context screenshot. This is what we show after they guess. Position its crop separately from the question crop.
+5) Left click on the map to choose where the answer pin will go (this is why you wrote down a reminder note for where it is).
+6) Click `Export ZIP` and save it to your folder from step 1. The button will only become available once both images and the answer pin are ready.
+7) Extract the ZIP. The resulting UUID folder should directly contain `question.webp`, `answer.webp`, and `answer.txt` (not another folder with the same UUID inside it).
 
 ## Formatting and Submitting for approval
 This is the "hard part" if you are unfamiliar; just follow along and you should be fine.
@@ -67,10 +67,16 @@ This is the "hard part" if you are unfamiliar; just follow along and you should 
 2) Click the `src` folder
 3) Click the `locations` folder
 4) Click `Add file` in the top right then `Upload files`.
-5) Drag all the uuid folders you extracted into the box to upload (*Do not include the .zip files*)
+5) Drag all the UUID folders you extracted into the box to upload (*Do not include the .zip files*). Each UUID folder should contain exactly `question.webp`, `answer.webp`, and `answer.txt`.
 6) Below that box you should see a `Commit changes` area. Click the radio button for `Create a new branch for this commit and start a pull request.` (You don't need to change anything else.)
 7) Click `Propose changes`.
-8) Click `Create pull request`.
+8) Before submitting, make sure the pull request shows:
+    - `base repository: JonathanAckerman/roo_guessr`
+    - `base: main`
+    - `head repository: <your-username>/roo_guessr`
+    - your newly created branch as the final selection
+9) Fill out the description and checklist, then click `Create pull request`.
+10) Click the `Files changed` tab and make sure it only contains the UUID folders you meant to submit. Each new location should contain the same three files listed above. If you see anything unrelated, leave a comment explaining it before I review the pull request.
 
 You're done! Now I review it and add it in. I know this is a bit of an...involved process but I hope this guide is straight-forward enough for you to have fun giving it a go. 
 

@@ -1,7 +1,8 @@
 import type { Location, NormalizedPoint } from "./locations";
 
 const ROUND_DURATION_MS = 60_000;
-const MAX_ROUNDS = 10;
+const DEFAULT_ROUND_COUNT = 10;
+const SCORES_PER_PAGE = 10;
 const MAX_ROUND_SCORE = 5_000;
 const FORGIVENESS_RADIUS = 0.015;
 const SCORE_DECAY = 8;
@@ -46,8 +47,17 @@ export function renderGame(
   app: HTMLDivElement,
   mapUrl: string,
   availableLocations: readonly Location[],
+  requestedRoundCount: number,
 ): void {
-  const runLocations = shuffle(availableLocations).slice(0, MAX_ROUNDS);
+  if (availableLocations.length === 0) {
+    throw new Error("RooGuessr cannot start a game without any locations.");
+  }
+
+  const fallbackRoundCount = Math.min(DEFAULT_ROUND_COUNT, availableLocations.length);
+  const roundCount = Number.isFinite(requestedRoundCount)
+    ? Math.min(availableLocations.length, Math.max(1, Math.floor(requestedRoundCount)))
+    : fallbackRoundCount;
+  const runLocations = shuffle(availableLocations).slice(0, roundCount);
   const roundScores: number[] = [];
   let roundIndex = 0;
   let totalScore = 0;
@@ -64,6 +74,8 @@ export function renderGame(
   const renderFinalScore = (): void => {
     stopTimer();
     const maximumScore = runLocations.length * MAX_ROUND_SCORE;
+    const scorePageCount = Math.max(1, Math.ceil(roundScores.length / SCORES_PER_PAGE));
+    let scorePageIndex = 0;
 
     app.innerHTML = `
       <main class="site-shell results-shell">
@@ -79,14 +91,12 @@ export function renderGame(
           <p class="kicker">Final score</p>
           <h1 class="score-value" id="final-score-title">${totalScore.toLocaleString()}</h1>
           <p>out of ${maximumScore.toLocaleString()} points across ${runLocations.length} ${runLocations.length === 1 ? "location" : "locations"}.</p>
-          <div class="game-final__rounds" aria-label="Round scores">
-            ${roundScores.map((score, index) => `
-              <div>
-                <span>Round ${index + 1}</span>
-                <strong class="score-value">${score.toLocaleString()}</strong>
-              </div>
-            `).join("")}
-          </div>
+          <div class="game-final__rounds" data-score-page></div>
+          <nav class="game-final__pagination" aria-label="Round score pages" data-score-pagination ${scorePageCount === 1 ? "hidden" : ""}>
+            <button class="tool-button" type="button" aria-label="Previous round scores" data-score-page-previous>Previous</button>
+            <span aria-live="polite" data-score-page-status></span>
+            <button class="tool-button" type="button" aria-label="Next round scores" data-score-page-next>Next</button>
+          </nav>
           <div class="game-final__actions">
             <button class="start-button" type="button" data-play-again>Play again</button>
             <a class="tool-button" href="/">Back to home</a>
@@ -95,8 +105,51 @@ export function renderGame(
       </main>
     `;
 
+    const scorePage = app.querySelector<HTMLElement>("[data-score-page]");
+    const previousScorePageButton = app.querySelector<HTMLButtonElement>("[data-score-page-previous]");
+    const nextScorePageButton = app.querySelector<HTMLButtonElement>("[data-score-page-next]");
+    const scorePageStatus = app.querySelector<HTMLElement>("[data-score-page-status]");
+
+    if (!scorePage || !previousScorePageButton || !nextScorePageButton || !scorePageStatus) {
+      throw new Error("RooGuessr could not initialize the final score breakdown.");
+    }
+
+    const renderScorePage = (): void => {
+      const firstScoreIndex = scorePageIndex * SCORES_PER_PAGE;
+      const pageScores = roundScores.slice(firstScoreIndex, firstScoreIndex + SCORES_PER_PAGE);
+      const finalScoreIndex = firstScoreIndex + pageScores.length;
+
+      scorePage.innerHTML = pageScores.map((score, index) => `
+        <div>
+          <span>Round ${firstScoreIndex + index + 1}</span>
+          <strong class="score-value">${score.toLocaleString()}</strong>
+        </div>
+      `).join("");
+      scorePage.setAttribute(
+        "aria-label",
+        `Round scores ${firstScoreIndex + 1} through ${finalScoreIndex} of ${roundScores.length}`,
+      );
+      scorePageStatus.textContent = `Page ${scorePageIndex + 1} of ${scorePageCount}`;
+      previousScorePageButton.disabled = scorePageIndex === 0;
+      nextScorePageButton.disabled = scorePageIndex === scorePageCount - 1;
+    };
+
+    previousScorePageButton.addEventListener("click", () => {
+      if (scorePageIndex === 0) return;
+      scorePageIndex -= 1;
+      renderScorePage();
+    });
+
+    nextScorePageButton.addEventListener("click", () => {
+      if (scorePageIndex === scorePageCount - 1) return;
+      scorePageIndex += 1;
+      renderScorePage();
+    });
+
+    renderScorePage();
+
     app.querySelector<HTMLButtonElement>("[data-play-again]")?.addEventListener("click", () => {
-      renderGame(app, mapUrl, availableLocations);
+      renderGame(app, mapUrl, availableLocations, runLocations.length);
     });
   };
 
@@ -106,6 +159,8 @@ export function renderGame(
     locked = false;
     deadline = Date.now() + ROUND_DURATION_MS;
     const location = runLocations[roundIndex];
+    const answerImagePreload = location.answerImageUrl ? new Image() : undefined;
+    if (answerImagePreload && location.answerImageUrl) answerImagePreload.src = location.answerImageUrl;
 
     app.innerHTML = `
       <main class="game-shell">
@@ -145,11 +200,11 @@ export function renderGame(
           <div class="game-side">
             <article class="game-card">
               <div class="game-card__heading">
-                <span>Question</span>
-                <span>Where is this?</span>
+                <span data-question-heading>Question</span>
+                <span data-question-prompt>Where is this?</span>
               </div>
-              <div class="game-question-wrap">
-                <img class="game-question" src="${location.imageUrl}" alt="Location question ${roundIndex + 1}" />
+              <div class="game-question-wrap" data-question-wrap>
+                <img class="game-question" src="${location.questionImageUrl}" alt="Location question ${roundIndex + 1}" data-question-image />
               </div>
             </article>
 
@@ -183,8 +238,12 @@ export function renderGame(
     const nextButton = app.querySelector<HTMLButtonElement>("[data-next-round]");
     const result = app.querySelector<HTMLElement>("[data-game-result]");
     const roundScore = app.querySelector<HTMLElement>("[data-round-score]");
+    const questionHeading = app.querySelector<HTMLElement>("[data-question-heading]");
+    const questionPrompt = app.querySelector<HTMLElement>("[data-question-prompt]");
+    const questionWrap = app.querySelector<HTMLElement>("[data-question-wrap]");
+    const questionImage = app.querySelector<HTMLImageElement>("[data-question-image]");
 
-    if (!map || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore) {
+    if (!map || !guessPin || !answerPin || !answerLine || !answerLineClip || !answerLineSvg || !mapStatus || !timer || !totalScoreText || !lockButton || !nextButton || !result || !roundScore || !questionHeading || !questionPrompt || !questionWrap || !questionImage) {
       throw new Error("RooGuessr could not initialize the game round.");
     }
 
@@ -217,6 +276,15 @@ export function renderGame(
       result.hidden = false;
       roundScore.textContent = score.toLocaleString();
       mapStatus.textContent = timedOut ? "Time expired" : "Answer revealed";
+
+      if (answerImagePreload) {
+        questionImage.src = answerImagePreload.src;
+        questionImage.alt = `Answer context for location ${roundIndex + 1}`;
+        questionImage.classList.add("game-question--answer");
+        questionWrap.classList.add("game-question-wrap--answer");
+        questionHeading.textContent = "Answer";
+        questionPrompt.textContent = "Location context";
+      }
 
       if (guess) {
         const guessX = guess.x * 100;
