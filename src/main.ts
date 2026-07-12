@@ -81,7 +81,7 @@ function render(): void {
           <span>RooGuessr</span>
         </a>
         <div class="site-header__actions">
-          <span class="location-count">${locations.length} curated ${locations.length === 1 ? "location" : "locations"}</span>
+          <span class="location-count">${locations.length} ${locations.length === 1 ? "location" : "locations"}</span>
           <a class="tool-button" href="?tool=answers">Add your own</a>
         </div>
       </header>
