@@ -17,31 +17,37 @@ I won't bore you with the details of how it works, only that the public website 
 0) Open dota
 1) In settings search "console" and check `Enable console` and set a Console hotkey. You might need to set the `-console` launch option through steam, you can google it if need be.
 2) Click `Custom Lobby` and `+ Create`
-3) Click `Edit`in the bottom right
+3) Click `Edit` in the bottom right
     - uncheck: `Fill Empty Slots With Bots`
 4) Press `Start Game` and get onto the map
 5) Open the console
 6) Use the console commands listed in the `Console Commands` section below
 
 ## Dota Console Commands
-`sv_cheats 1`                    // enables cheats
-`dota_camera_allow_freecam 1`    // enables you to toggle free camera
-`dota_toggle_free_camera`        // actually toggles the free camera
-`fog_enable 0`                   // turns off fog
-`dota_creeps_no_spawning 1`      // turns off creeps
-`dota_daynightcycle_pause 1`     // pauses day night cycle
-`dota_daynightcycle_toggle`      // daytime preferred so there's no clouds
-`r_farz 100000`                  // lets you see the whole map at once
-`freecamera_max_speed 1000`      // if you want to change the camera speed
-`hud_toggle_visibility`          // toggles all hud visibility
-// IF you need it `disconnect` to leave the lobby and `quit` to quit dota entirely
+```text
+sv_cheats 1                       // enables cheats
+dota_camera_allow_freecam 1       // enables you to toggle free camera
+dota_toggle_free_camera           // actually toggles the free camera
+fog_enable 0                      // turns off fog
+dota_creeps_no_spawning 1         // turns off creeps
+dota_daynightcycle_pause 1        // pauses day night cycle
+dota_daynightcycle_toggle         // daytime preferred so there's no clouds
+r_farz 100000                     // lets you see the whole map at once
+freecamera_max_speed 1000         // if you want to change the camera speed
+hud_toggle_visibility             // toggles all HUD visibility
+
+disconnect                        // leave the lobby, if needed
+quit                              // quit Dota entirely
+```
 
 **NOTE:** some of these don't auto-complete in the text box but will work anyways
 
 ## Dota's Free Camera Controls
-Up/Down Arrows    = move camera forward and back (in the direction the camera is pointing)
-Left/Right Arrows = move the camera left and right (relative to the camera direction)
-Hold Shift        = camera moves faster
+```text
+Up / Down Arrows     = move camera forward and back (in the direction the camera is pointing)
+Left / Right Arrows  = move the camera left and right (relative to the camera direction)
+Hold Shift           = camera moves faster
+```
 
 ## Taking screenshots in Dota
 1) Fly around looking for good spots! You want spots which are unique/interesting with some identifiable clues for the player to use...a nondescript patch of dirt would be impossible to deduce for anyone but rainbolt.

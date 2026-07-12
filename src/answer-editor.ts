@@ -1,10 +1,13 @@
 import { strToU8, zipSync } from "fflate";
+import { marked } from "marked";
+import readmeMarkdown from "../README.md?raw";
 import type { NormalizedPoint } from "./game/locations";
 
 const QUESTION_WIDTH = 1400;
 const QUESTION_HEIGHT = 1000;
 const CROP_PREVIEW_WIDTH = 700;
 const CROP_PREVIEW_HEIGHT = 500;
+const howToHtml = marked(readmeMarkdown, { async: false, gfm: true });
 
 type ImageKind = "question" | "answer";
 
@@ -143,6 +146,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           <span class="wordmark__pin" aria-hidden="true"></span>
           <span>RooGuessr</span>
         </a>
+        <button class="tool-button" type="button" data-how-to-open>How To</button>
       </header>
 
       <section class="editor-intro" aria-labelledby="editor-title">
@@ -241,6 +245,23 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
         <span>Extract the ZIP into <code>src/locations/&lt;zip-name&gt;/</code>.</span>
       </footer>
     </main>
+
+    <dialog class="how-to-dialog" aria-labelledby="how-to-dialog-title" data-how-to-dialog>
+      <div class="how-to-dialog__panel">
+        <header class="how-to-dialog__header">
+          <span class="kicker" id="how-to-dialog-title">How To</span>
+          <button
+            class="how-to-dialog__close"
+            type="button"
+            aria-label="Close how-to guide"
+            data-how-to-close
+          >&times;</button>
+        </header>
+        <article class="how-to-dialog__content">
+          ${howToHtml}
+        </article>
+      </div>
+    </dialog>
   `;
 
   const fileInputs: Record<ImageKind, HTMLInputElement | null> = {
@@ -267,6 +288,9 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const status = app.querySelector<HTMLElement>("[data-editor-status]");
   const copyButton = app.querySelector<HTMLButtonElement>("[data-copy-answer]");
   const downloadButton = app.querySelector<HTMLButtonElement>("[data-download-location]");
+  const howToOpenButton = app.querySelector<HTMLButtonElement>("[data-how-to-open]");
+  const howToDialog = app.querySelector<HTMLDialogElement>("[data-how-to-dialog]");
+  const howToCloseButton = app.querySelector<HTMLButtonElement>("[data-how-to-close]");
 
   if (
     !fileInputs.question
@@ -287,6 +311,9 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     || !status
     || !copyButton
     || !downloadButton
+    || !howToOpenButton
+    || !howToDialog
+    || !howToCloseButton
   ) {
     throw new Error("RooGuessr location builder could not initialize.");
   }
@@ -294,6 +321,21 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const imageInputs = fileInputs as Record<ImageKind, HTMLInputElement>;
   const imageErrors = fileErrors as Record<ImageKind, HTMLElement>;
   const imageTabs = cropTabs as Record<ImageKind, HTMLButtonElement>;
+
+  howToOpenButton.addEventListener("click", () => {
+    howToDialog.showModal();
+    document.documentElement.classList.add("how-to-open");
+  });
+
+  howToCloseButton.addEventListener("click", () => howToDialog.close());
+
+  howToDialog.addEventListener("click", (event) => {
+    if (event.target === howToDialog) howToDialog.close();
+  });
+
+  howToDialog.addEventListener("close", () => {
+    document.documentElement.classList.remove("how-to-open");
+  });
 
   const setStatus = (message: string, error = false): void => {
     status.textContent = message;

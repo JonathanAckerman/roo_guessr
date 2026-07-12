@@ -889,6 +889,150 @@ h2 {
   padding: clamp(24px, 4vh, 36px) 0 36px;
 }
 
+html.how-to-open {
+  overflow: hidden;
+}
+
+.how-to-dialog {
+  width: min(960px, calc(100vw - 40px));
+  max-width: none;
+  height: min(88dvh, 920px);
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(237, 243, 232, 0.18);
+  border-radius: 18px;
+  color: #edf3e8;
+  background: #0c1714;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.72);
+}
+
+.how-to-dialog::backdrop {
+  background: rgba(2, 7, 5, 0.82);
+}
+
+.how-to-dialog__panel {
+  display: grid;
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.how-to-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(237, 243, 232, 0.12);
+  background: #101d19;
+}
+
+.how-to-dialog__header .kicker {
+  margin: 0;
+}
+
+.how-to-dialog__close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  padding: 0 0 2px;
+  place-items: center;
+  border: 1px solid rgba(237, 243, 232, 0.18);
+  border-radius: 8px;
+  color: #f4ecdc;
+  background: rgba(237, 243, 232, 0.04);
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: default;
+}
+
+.how-to-dialog__close:hover {
+  border-color: rgba(214, 114, 73, 0.72);
+  color: #ffe0c0;
+  background: rgba(214, 114, 73, 0.12);
+}
+
+.how-to-dialog__content {
+  padding: clamp(24px, 4vw, 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  color: #aab9af;
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
+.how-to-dialog__content h1,
+.how-to-dialog__content h2 {
+  max-width: none;
+  color: #f7f2e5;
+}
+
+.how-to-dialog__content h1 {
+  margin: 0 0 24px;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1;
+}
+
+.how-to-dialog__content h2 {
+  margin: 2.4em 0 0.7em;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.how-to-dialog__content p {
+  margin-bottom: 1em;
+}
+
+.how-to-dialog__content ol,
+.how-to-dialog__content ul {
+  margin: 0 0 1.25em;
+  padding-left: 1.6rem;
+}
+
+.how-to-dialog__content li + li {
+  margin-top: 0.45em;
+}
+
+.how-to-dialog__content li::marker {
+  color: #d67249;
+  font-weight: 700;
+}
+
+.how-to-dialog__content strong {
+  color: #f1d4ae;
+}
+
+.how-to-dialog__content code {
+  padding: 0.12em 0.34em;
+  border: 1px solid rgba(237, 243, 232, 0.1);
+  border-radius: 5px;
+  color: #f2c39f;
+  background: rgba(4, 10, 8, 0.52);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.how-to-dialog__content pre {
+  margin: 1.1em 0 1.35em;
+  padding: 16px 18px;
+  overflow-x: auto;
+  border: 1px solid rgba(237, 243, 232, 0.12);
+  border-radius: 10px;
+  background: #07100d;
+  line-height: 1.55;
+}
+
+.how-to-dialog__content pre code {
+  padding: 0;
+  border: 0;
+  color: #dce7dd;
+  background: transparent;
+  font-size: 0.82rem;
+}
+
 .editor-intro > p {
   max-width: none;
   margin-bottom: 0;
@@ -1234,6 +1378,21 @@ button.tool-button:disabled {
 
   .site-header {
     min-height: 74px;
+  }
+
+  .how-to-dialog {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
+    border-radius: 12px;
+  }
+
+  .how-to-dialog__header {
+    padding: 10px 12px;
+  }
+
+  .how-to-dialog__content {
+    padding: 24px 18px 32px;
   }
 
   .location-count {
