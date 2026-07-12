@@ -2,7 +2,13 @@ import "./styles.css";
 import homeHeroUrl from "./assets/home-hero.png";
 import mapUrl from "./assets/dota-map.webp";
 import { renderAnswerEditor } from "./answer-editor";
-import { renderGame } from "./game/game";
+import {
+  DEFAULT_ROUND_DURATION_SECONDS,
+  MAX_ROUND_DURATION_SECONDS,
+  MIN_ROUND_DURATION_SECONDS,
+  renderGame,
+  ROUND_DURATION_STEP_SECONDS,
+} from "./game/game";
 import { locations } from "./game/locations";
 
 const appElement = document.querySelector<HTMLDivElement>("#app");
@@ -20,19 +26,29 @@ function questionCountLabel(count: number): string {
   return `${count} ${count === 1 ? "question" : "questions"}`;
 }
 
+function durationLabel(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function durationAriaLabel(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes} ${minutes === 1 ? "minute" : "minutes"}${remainingSeconds ? ` ${remainingSeconds} seconds` : ""}`;
+}
+
 function render(): void {
   const maximumQuestionCount = locations.length;
   const defaultQuestionCount = Math.min(DEFAULT_QUESTION_COUNT, maximumQuestionCount);
   const canStart = maximumQuestionCount > 0;
   const questionCountControl = maximumQuestionCount > MIN_QUESTION_COUNT
     ? `
-      <div class="question-count-control" data-question-count-control>
-        <div class="question-count-control__heading">
+      <div class="game-option-control" data-question-count-control>
+        <div class="game-option-control__heading">
           <label for="question-count">Questions</label>
           <output for="question-count" data-question-count-output>${questionCountLabel(defaultQuestionCount)}</output>
         </div>
         <input
-          class="question-count-control__range"
+          class="game-option-control__range"
           id="question-count"
           type="range"
           min="${MIN_QUESTION_COUNT}"
@@ -42,14 +58,14 @@ function render(): void {
           aria-valuetext="${questionCountLabel(defaultQuestionCount)}"
           data-question-count
         />
-        <div class="question-count-control__limits" aria-hidden="true">
+        <div class="game-option-control__limits" aria-hidden="true">
           <span>${MIN_QUESTION_COUNT}</span>
           <span>${maximumQuestionCount}</span>
         </div>
       </div>
     `
     : `
-      <div class="question-count-control question-count-control--fixed" data-question-count-control>
+      <div class="game-option-control game-option-control--fixed" data-question-count-control>
         <span>Questions</span>
         <strong data-question-count-output>
           ${canStart ? `${questionCountLabel(maximumQuestionCount)} · all available` : "No locations available"}
@@ -83,7 +99,30 @@ function render(): void {
         <div class="map-window">
           <img class="map-window__image" src="${homeHeroUrl}" alt="" aria-hidden="true" draggable="false" />
           <div class="map-window__actions">
-            ${questionCountControl}
+            <div class="game-options">
+              ${questionCountControl}
+              <div class="game-option-control" data-round-duration-control>
+                <div class="game-option-control__heading">
+                  <label for="round-duration">Time</label>
+                  <output for="round-duration" data-round-duration-output>${durationLabel(DEFAULT_ROUND_DURATION_SECONDS)}</output>
+                </div>
+                <input
+                  class="game-option-control__range"
+                  id="round-duration"
+                  type="range"
+                  min="${MIN_ROUND_DURATION_SECONDS}"
+                  max="${MAX_ROUND_DURATION_SECONDS}"
+                  value="${DEFAULT_ROUND_DURATION_SECONDS}"
+                  step="${ROUND_DURATION_STEP_SECONDS}"
+                  aria-valuetext="${durationAriaLabel(DEFAULT_ROUND_DURATION_SECONDS)}"
+                  data-round-duration
+                />
+                <div class="game-option-control__limits" aria-hidden="true">
+                  <span>${durationLabel(MIN_ROUND_DURATION_SECONDS)}</span>
+                  <span>${durationLabel(MAX_ROUND_DURATION_SECONDS)}</span>
+                </div>
+              </div>
+            </div>
             <button class="start-button" type="button" data-start-game ${canStart ? "" : "disabled"}>
               Start Game
             </button>
@@ -95,7 +134,10 @@ function render(): void {
 
   const questionCountInput = app.querySelector<HTMLInputElement>("[data-question-count]");
   const questionCountOutput = app.querySelector<HTMLElement>("[data-question-count-output]");
+  const roundDurationInput = app.querySelector<HTMLInputElement>("[data-round-duration]");
+  const roundDurationOutput = app.querySelector<HTMLElement>("[data-round-duration-output]");
   let selectedQuestionCount = defaultQuestionCount;
+  let selectedRoundDurationSeconds = DEFAULT_ROUND_DURATION_SECONDS;
 
   questionCountInput?.addEventListener("input", () => {
     selectedQuestionCount = Number(questionCountInput.value);
@@ -104,8 +146,18 @@ function render(): void {
     if (questionCountOutput) questionCountOutput.textContent = label;
   });
 
+  roundDurationInput?.addEventListener("input", () => {
+    selectedRoundDurationSeconds = Number(roundDurationInput.value);
+    const label = durationLabel(selectedRoundDurationSeconds);
+    roundDurationInput.setAttribute("aria-valuetext", durationAriaLabel(selectedRoundDurationSeconds));
+    if (roundDurationOutput) roundDurationOutput.textContent = label;
+  });
+
   app.querySelector<HTMLButtonElement>("[data-start-game]")?.addEventListener("click", () => {
-    renderGame(app, mapUrl, locations, selectedQuestionCount);
+    renderGame(app, mapUrl, locations, {
+      roundCount: selectedQuestionCount,
+      roundDurationSeconds: selectedRoundDurationSeconds,
+    });
   });
 }
 

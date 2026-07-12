@@ -89,6 +89,7 @@ a:focus-visible {
   background: url("/dota-emblem.png") 0 100% / 78% 78% no-repeat;
 }
 
+.wordmark__pin::before,
 .wordmark__pin::after {
   position: absolute;
   top: -24px;
@@ -96,10 +97,18 @@ a:focus-visible {
   width: 30px;
   height: 42px;
   clip-path: var(--pin-shape);
-  background: radial-gradient(circle at 50% 35.714%, #17110e 0 4px, #f4ecdc 4.2px);
   content: "";
-  transform: scale(0.62) rotate(19deg);
   transform-origin: 50% 100%;
+}
+
+.wordmark__pin::before {
+  background: #020504;
+  transform: scale(0.69) rotate(19deg);
+}
+
+.wordmark__pin::after {
+  background: radial-gradient(circle at 50% 35.714%, #020504 0 4.1px, #f4ecdc 4.2px);
+  transform: scale(0.62) rotate(19deg);
 }
 
 .location-count,
@@ -216,8 +225,10 @@ h1 {
   padding: 28px;
 }
 
-.question-count-control {
-  width: min(300px, 100%);
+.game-options {
+  display: grid;
+  width: min(560px, 100%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 10px 14px 8px;
   border: 1px solid rgba(237, 243, 232, 0.2);
   border-radius: 9px;
@@ -226,17 +237,31 @@ h1 {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
 }
 
-.question-count-control__heading,
-.question-count-control__limits,
-.question-count-control--fixed {
+.game-option-control {
+  min-width: 0;
+  padding: 0 14px;
+}
+
+.game-option-control:first-child {
+  padding-left: 0;
+}
+
+.game-option-control + .game-option-control {
+  padding-right: 0;
+  border-left: 1px solid rgba(237, 243, 232, 0.14);
+}
+
+.game-option-control__heading,
+.game-option-control__limits,
+.game-option-control--fixed {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-.question-count-control__heading label,
-.question-count-control--fixed > span {
+.game-option-control__heading label,
+.game-option-control--fixed > span {
   color: #91a89a;
   font-size: 0.68rem;
   font-weight: 700;
@@ -244,14 +269,14 @@ h1 {
   text-transform: uppercase;
 }
 
-.question-count-control__heading output,
-.question-count-control--fixed strong {
+.game-option-control__heading output,
+.game-option-control--fixed strong {
   color: #f7f2e5;
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
 }
 
-.question-count-control__range {
+.game-option-control__range {
   display: block;
   width: 100%;
   margin: 7px 0 1px;
@@ -259,13 +284,13 @@ h1 {
   cursor: default;
 }
 
-.question-count-control__limits {
+.game-option-control__limits {
   color: #71857a;
   font-size: 0.62rem;
   font-variant-numeric: tabular-nums;
 }
 
-.question-count-control--fixed {
+.game-option-control--fixed {
   min-height: 54px;
 }
 
@@ -427,17 +452,18 @@ h2 {
 
 .game-map-magnifier-source,
 .game-map-magnifier {
-  position: absolute;
+  position: fixed;
   pointer-events: none;
 }
 
 .game-map-magnifier-source[hidden],
+.game-map-magnifier-connectors[hidden],
 .game-map-magnifier[hidden] {
   display: none;
 }
 
 .game-map-magnifier-source {
-  z-index: 4;
+  z-index: 41;
   border: 2px solid #f7f2e5;
   border-radius: 5px;
   background: rgba(247, 242, 229, 0.08);
@@ -447,10 +473,27 @@ h2 {
   transform: translate(-50%, -50%);
 }
 
+.game-map-magnifier-connectors {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+  filter: drop-shadow(0 0 3px rgba(247, 242, 229, 0.55));
+  pointer-events: none;
+}
+
+.game-map-magnifier-connectors line {
+  stroke: rgba(247, 242, 229, 0.72);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
 .game-map-magnifier {
-  z-index: 5;
-  width: clamp(160px, 36%, 252px);
-  max-width: calc(100% - 16px);
+  z-index: 42;
+  width: clamp(160px, 20vw, 252px);
   aspect-ratio: 7 / 5;
   overflow: hidden;
   border: 2px solid #f7f2e5;
@@ -468,11 +511,32 @@ h2 {
   user-select: none;
 }
 
+.game-map-magnifier__answer-line {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.game-map-magnifier__answer-line[hidden] {
+  display: none;
+}
+
+.game-map-magnifier__answer-line line {
+  stroke: rgba(247, 226, 194, 0.9);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  vector-effect: non-scaling-stroke;
+}
+
 .game-map-magnifier__reticle {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 1;
+  z-index: 4;
   width: 18px;
   height: 18px;
   border: 1px solid rgba(8, 16, 14, 0.9);
@@ -657,6 +721,27 @@ h2 {
   line-height: 1;
 }
 
+.game-map__pin--magnifier {
+  z-index: 3;
+  animation: none;
+}
+
+.game-map__pin--guess.game-map__pin--magnifier {
+  transform: rotate(9deg);
+}
+
+.game-map__pin--answer.game-map__pin--magnifier {
+  animation: none;
+}
+
+.game-result__breakdown {
+  margin: 4px 0 0;
+  color: #83958a;
+  font-size: 0.64rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .game-controls__actions {
   width: 120px;
   grid-column: 2;
@@ -746,6 +831,13 @@ h2 {
 .game-final__rounds strong {
   color: #f1d4ae;
   font: 1rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.game-final__rounds small {
+  color: #71857a;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
 .game-stats .score-value,
@@ -1074,6 +1166,23 @@ button.tool-button:disabled {
   color: #f1d4ae;
 }
 
+@media (max-width: 940px) {
+  .map-window__actions {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    padding: 16px;
+  }
+
+  .game-options {
+    width: min(520px, 100%);
+  }
+
+  .map-window__actions .start-button {
+    width: min(250px, 100%);
+  }
+}
+
 @media (max-width: 820px) {
   .hero {
     grid-template-columns: 1fr;
@@ -1100,14 +1209,6 @@ button.tool-button:disabled {
     margin-top: 8px;
   }
 
-  .map-window__actions {
-    gap: 10px;
-    padding: 16px;
-  }
-
-  .question-count-control {
-    width: min(220px, 60%);
-  }
 }
 
 @media (max-width: 560px) {
@@ -1155,21 +1256,24 @@ button.tool-button:disabled {
   }
 
   .map-window__actions {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(120px, 0.75fr);
-    align-items: end;
+    display: flex;
+    align-items: stretch;
   }
 
-  .question-count-control {
+  .game-options {
     width: 100%;
   }
 
-  .question-count-control__heading {
+  .game-option-control__heading {
     gap: 6px;
   }
 
-  .question-count-control__heading output {
+  .game-option-control__heading output {
     font-size: 0.72rem;
+  }
+
+  .map-window__actions .start-button {
+    width: 100%;
   }
 
   .game-header {
