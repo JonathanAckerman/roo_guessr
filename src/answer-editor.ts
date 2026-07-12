@@ -156,33 +156,10 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
         </p>
       </section>
 
-      <section class="editor-toolbar" aria-label="Location images">
-        <div class="editor-source-control">
-          <label for="question-file">Question image</label>
-          <input
-            id="question-file"
-            type="file"
-            accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
-            data-image-file="question"
-          />
-          <p class="editor-file-error" data-image-error="question" hidden></p>
-        </div>
-        <div class="editor-source-control">
-          <label for="answer-file">Answer image</label>
-          <input
-            id="answer-file"
-            type="file"
-            accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
-            data-image-file="answer"
-          />
-          <p class="editor-file-error" data-image-error="answer" hidden></p>
-        </div>
-      </section>
-
       <section class="editor-workspace">
         <article class="editor-card">
           <div class="editor-card__heading">
-            <span>Map</span>
+            <span>Place an answer pin</span>
             <span data-coordinate-label>No answer selected</span>
           </div>
           <div class="editor-map-wrap">
@@ -195,6 +172,16 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           <div class="editor-card__heading editor-crop-heading">
             <span>Question crop</span>
             <span data-crop-name="question">${QUESTION_WIDTH}×${QUESTION_HEIGHT}</span>
+          </div>
+          <div class="editor-source-control">
+            <label for="question-file">Question image</label>
+            <input
+              id="question-file"
+              type="file"
+              accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+              data-image-file="question"
+            />
+            <p class="editor-file-error" data-image-error="question" hidden></p>
           </div>
           <div class="editor-question-wrap">
             <canvas
@@ -215,6 +202,16 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
           <div class="editor-card__heading editor-crop-heading">
             <span>Answer crop</span>
             <span data-crop-name="answer">${QUESTION_WIDTH}×${QUESTION_HEIGHT}</span>
+          </div>
+          <div class="editor-source-control">
+            <label for="answer-file">Answer image</label>
+            <input
+              id="answer-file"
+              type="file"
+              accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+              data-image-file="answer"
+            />
+            <p class="editor-file-error" data-image-error="answer" hidden></p>
           </div>
           <div class="editor-question-wrap">
             <canvas

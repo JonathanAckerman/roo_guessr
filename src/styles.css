@@ -1041,19 +1041,15 @@ html.how-to-open {
   line-height: 1.65;
 }
 
-.editor-toolbar {
+.editor-source-control {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  align-items: start;
-  margin-bottom: 20px;
-  padding: 16px 18px;
-  border: 1px solid rgba(237, 243, 232, 0.12);
-  border-radius: 14px;
-  background: rgba(14, 28, 24, 0.74);
+  min-width: 0;
+  gap: 8px;
+  padding: 0 14px 14px;
+  border-bottom: 1px solid rgba(237, 243, 232, 0.1);
 }
 
-.editor-toolbar label {
+.editor-source-control label {
   color: #91a89a;
   font-size: 0.72rem;
   font-weight: 700;
@@ -1061,16 +1057,13 @@ html.how-to-open {
   text-transform: uppercase;
 }
 
-.editor-source-control {
-  display: grid;
-  min-width: 0;
-  gap: 8px;
-}
-
-.editor-toolbar input {
+.editor-source-control input {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 42px;
   padding: 0 12px;
+  overflow: hidden;
   border: 1px solid rgba(237, 243, 232, 0.16);
   border-radius: 8px;
   color: #edf3e8;
@@ -1078,13 +1071,13 @@ html.how-to-open {
   font: inherit;
 }
 
-.editor-toolbar input[type="file"] {
+.editor-source-control input[type="file"] {
   height: auto;
   min-height: 42px;
   padding: 5px;
 }
 
-.editor-toolbar input::file-selector-button {
+.editor-source-control input::file-selector-button {
   margin-right: 12px;
   padding: 7px 11px;
   border: 0;
@@ -1333,13 +1326,8 @@ button.tool-button:disabled {
 }
 
 @media (max-width: 680px) {
-  .editor-workspace,
-  .editor-toolbar {
+  .editor-workspace {
     grid-template-columns: 1fr;
-  }
-
-  .editor-toolbar label:not(:first-child) {
-    margin-top: 8px;
   }
 
 }
