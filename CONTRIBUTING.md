@@ -11,12 +11,12 @@ Thanks for helping expand the RooGuessr location pool.
    location's position on the map.
 4. Export the generated ZIP, create `src/locations/<zip-name>/`, and extract the
    ZIP's three files directly into that folder: `question.webp`, `answer.webp`,
-   and `answer.txt`.
+   and `pin.txt`.
 5. Open a pull request using the provided template.
 
 The builder accepts PNG, JPG, and WebP inputs that are at least 1400×1000.
 Each draggable crop creates a 1400×1000 WebP, and the builder creates
-`answer.txt` automatically. It runs entirely in the browser and does not upload
+`pin.txt` automatically. It runs entirely in the browser and does not upload
 your source images. If you have the development tools installed, run
 `pnpm check` before submitting; GitHub Actions performs the same validation on
 the pull request.

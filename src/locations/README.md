@@ -4,8 +4,8 @@ Each location lives in a folder named with a lowercase UUID v4:
 
 ```text
 src/locations/<uuid>/
-  answer.txt
   answer.webp
+  pin.txt
   question.webp
 ```
 
@@ -13,7 +13,7 @@ src/locations/<uuid>/
 is a higher-context view revealed after the guess. Both files must be authored
 images exported by the location builder at 1400×1000 (7:5).
 
-`answer.txt` contains the answer pin as normalized `x, y` coordinates. The map's
+`pin.txt` contains the answer pin as normalized `x, y` coordinates. The map's
 bottom-left is `0, 0` and its top-right is `1, 1`. The location builder writes
 this file automatically.
 

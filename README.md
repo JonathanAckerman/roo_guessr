@@ -63,7 +63,7 @@ Hold Shift           = camera moves faster
 4) Under `Answer image`, choose your context screenshot. This is what we show after they guess. Position its crop separately from the question crop.
 5) Left click on the map to choose where the answer pin will go (this is why you wrote down a reminder note for where it is).
 6) Click `Export ZIP` and save it to your folder from step 1. The button will only become available once both images and the answer pin are ready.
-7) Extract the ZIP. The resulting UUID folder should directly contain `question.webp`, `answer.webp`, and `answer.txt` (not another folder with the same UUID inside it).
+7) Extract the ZIP. The resulting UUID folder should directly contain `question.webp`, `answer.webp`, and `pin.txt` (not another folder with the same UUID inside it).
 
 ## Formatting and Submitting for approval
 This is the "hard part" if you are unfamiliar; just follow along and you should be fine.
@@ -72,7 +72,7 @@ This is the "hard part" if you are unfamiliar; just follow along and you should 
 2) Click the `src` folder
 3) Click the `locations` folder
 4) Click `Add file` in the top right then `Upload files`.
-5) Drag all the UUID folders you extracted into the box to upload (*Do not include the .zip files*). Each UUID folder should contain exactly `question.webp`, `answer.webp`, and `answer.txt`.
+5) Drag all the UUID folders you extracted into the box to upload (*Do not include the .zip files*). Each UUID folder should contain exactly `question.webp`, `answer.webp`, and `pin.txt`.
 6) Below that box you should see a `Commit changes` area. Click the radio button for `Create a new branch for this commit and start a pull request.` (You don't need to change anything else.)
 7) Click `Propose changes`.
 8) Before submitting, make sure the pull request shows:

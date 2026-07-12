@@ -44,8 +44,8 @@ function roundedPoint(point: NormalizedPoint): NormalizedPoint {
   };
 }
 
-function formatAnswer(answer: NormalizedPoint): string {
-  return `${answer.x.toFixed(4)}, ${answer.y.toFixed(4)}`;
+function formatPin(pin: NormalizedPoint): string {
+  return `${pin.x.toFixed(4)}, ${pin.y.toFixed(4)}`;
 }
 
 function imageKindLabel(kind: ImageKind): string {
@@ -233,12 +233,12 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
         <div>
           <p class="section-number">Generated location</p>
           <strong data-location-id>—</strong>
-          <p><code>answer.txt</code>: <span data-answer-text>—</span></p>
+          <p><code>pin.txt</code>: <span data-pin-text>—</span></p>
           <p data-editor-status>Choose a question image and an answer image to begin.</p>
         </div>
         <div class="editor-actions">
           <button class="tool-button" type="button" data-reset-editor disabled>Reset</button>
-          <button class="tool-button" type="button" data-copy-answer disabled>Copy answer</button>
+          <button class="tool-button" type="button" data-copy-answer disabled>Copy pin</button>
           <button class="start-button" type="button" data-download-location disabled>Export ZIP</button>
         </div>
       </section>
@@ -294,7 +294,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
   const pin = app.querySelector<HTMLDivElement>(".editor-pin");
   const coordinateLabel = app.querySelector<HTMLElement>("[data-coordinate-label]");
   const locationIdText = app.querySelector<HTMLElement>("[data-location-id]");
-  const answerText = app.querySelector<HTMLElement>("[data-answer-text]");
+  const pinText = app.querySelector<HTMLElement>("[data-pin-text]");
   const status = app.querySelector<HTMLElement>("[data-editor-status]");
   const resetButton = app.querySelector<HTMLButtonElement>("[data-reset-editor]");
   const copyButton = app.querySelector<HTMLButtonElement>("[data-copy-answer]");
@@ -320,7 +320,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     || !pin
     || !coordinateLabel
     || !locationIdText
-    || !answerText
+    || !pinText
     || !status
     || !resetButton
     || !copyButton
@@ -385,12 +385,12 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
 
     if (!answer) {
       coordinateLabel.textContent = "No answer selected";
-      answerText.textContent = "—";
+      pinText.textContent = "—";
     } else {
       pin.style.left = `${answer.x * 100}%`;
       pin.style.top = `${(1 - answer.y) * 100}%`;
       coordinateLabel.textContent = `X ${answer.x.toFixed(4)} · Y ${answer.y.toFixed(4)}`;
-      answerText.textContent = formatAnswer(answer);
+      pinText.textContent = formatPin(answer);
     }
 
     updateActionState();
@@ -509,7 +509,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       setFileError(kind);
       clearImage(kind);
     }
-    copyButton.textContent = "Copy answer";
+    copyButton.textContent = "Copy pin";
     setStatus(message);
   };
 
@@ -646,11 +646,11 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
     if (!answer) return;
 
     try {
-      await navigator.clipboard.writeText(formatAnswer(answer));
+      await navigator.clipboard.writeText(formatPin(answer));
       copyButton.textContent = "Copied!";
-      setStatus("Copied the answer.txt coordinate.");
+      setStatus("Copied the pin.txt coordinate.");
       window.setTimeout(() => {
-        copyButton.textContent = "Copy answer";
+        copyButton.textContent = "Copy pin";
       }, 1600);
     } catch {
       setStatus("Clipboard access failed. Select and copy the answer shown here.", true);
@@ -673,7 +673,7 @@ export function renderAnswerEditor(app: HTMLDivElement, mapUrl: string): void {
       const archive = zipSync({
         "question.webp": new Uint8Array(await questionBlob.arrayBuffer()),
         "answer.webp": new Uint8Array(await answerBlob.arrayBuffer()),
-        "answer.txt": strToU8(`${formatAnswer(answer)}\r\n`),
+        "pin.txt": strToU8(`${formatPin(answer)}\r\n`),
       }, { level: 0 });
       const archiveBuffer = archive.slice().buffer as ArrayBuffer;
       downloadBlob(new Blob([archiveBuffer], { type: "application/zip" }), `${exportedLocationId}.zip`);

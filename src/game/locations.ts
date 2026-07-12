@@ -10,7 +10,7 @@ export interface Location {
   answerImageUrl?: string;
 }
 
-const answerModules = import.meta.glob<string>("../locations/*/answer.txt", {
+const pinModules = import.meta.glob<string>("../locations/*/pin.txt", {
   eager: true,
   query: "?raw",
   import: "default",
@@ -28,30 +28,30 @@ const answerImageModules = import.meta.glob<string>("../locations/*/answer.webp"
   import: "default",
 });
 
-function parseAnswer(path: string, text: string): NormalizedPoint {
+function parsePin(path: string, text: string): NormalizedPoint {
   const values = text.trim().split(",").map((value) => Number(value.trim()));
 
   if (values.length !== 2 || values.some((value) => !Number.isFinite(value) || value < 0 || value > 1)) {
-    throw new Error(`Invalid answer.txt for ${path}; expected normalized coordinates like 0.25, 0.70`);
+    throw new Error(`Invalid pin.txt for ${path}; expected normalized coordinates like 0.25, 0.70`);
   }
 
   return { x: values[0], y: values[1] };
 }
 
-export const locations: Location[] = Object.entries(answerModules)
-  .map(([answerPath, answerText]) => {
-    const directoryMatch = answerPath.match(/\/([^/]+)\/answer\.txt$/);
-    const imagePath = answerPath.replace(/answer\.txt$/, "question.webp");
-    const answerImagePath = answerPath.replace(/answer\.txt$/, "answer.webp");
+export const locations: Location[] = Object.entries(pinModules)
+  .map(([pinPath, pinText]) => {
+    const directoryMatch = pinPath.match(/\/([^/]+)\/pin\.txt$/);
+    const imagePath = pinPath.replace(/pin\.txt$/, "question.webp");
+    const answerImagePath = pinPath.replace(/pin\.txt$/, "answer.webp");
     const questionImageUrl = questionImageModules[imagePath];
 
     if (!directoryMatch || !questionImageUrl) {
-      throw new Error(`Invalid location directory or missing question.webp for ${answerPath}`);
+      throw new Error(`Invalid location directory or missing question.webp for ${pinPath}`);
     }
 
     return {
       id: directoryMatch[1],
-      answer: parseAnswer(answerPath, answerText),
+      answer: parsePin(pinPath, pinText),
       questionImageUrl,
       answerImageUrl: answerImageModules[answerImagePath],
     };

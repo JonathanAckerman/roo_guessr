@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const locationsDirectory = fileURLToPath(new URL("../src/locations/", import.meta.url));
 const idPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const requiredFiles = new Set(["answer.txt", "question.webp"]);
+const requiredFiles = new Set(["pin.txt", "question.webp"]);
 const allowedFiles = new Set([...requiredFiles, "answer.webp"]);
 // These locations predate answer images. Remove an ID once its answer.webp is authored.
 const legacyLocationsWithoutAnswerImages = new Set([
@@ -38,7 +38,7 @@ function fail(id, message) {
 
 async function validateLocation(directoryName) {
   const directory = join(locationsDirectory, directoryName);
-  const answerPath = join(directory, "answer.txt");
+  const pinPath = join(directory, "pin.txt");
 
   if (!idPattern.test(directoryName)) {
     fail(directoryName, "directory names must be lowercase UUID v4 values");
@@ -63,13 +63,13 @@ async function validateLocation(directoryName) {
     fail(directoryName, "answer.webp is missing");
   }
 
-  let answer;
+  let pin;
 
   try {
-    answer = await readFile(answerPath, "utf8");
+    pin = await readFile(pinPath, "utf8");
   } catch (error) {
-    if (entryNames.has("answer.txt")) {
-      fail(directoryName, `answer.txt is unreadable (${error.message})`);
+    if (entryNames.has("pin.txt")) {
+      fail(directoryName, `pin.txt is unreadable (${error.message})`);
     }
   }
 
@@ -97,10 +97,10 @@ async function validateLocation(directoryName) {
     }
   }
 
-  if (answer !== undefined) {
-    const values = answer.trim().split(",").map((value) => Number(value.trim()));
+  if (pin !== undefined) {
+    const values = pin.trim().split(",").map((value) => Number(value.trim()));
     if (values.length !== 2 || values.some((value) => !Number.isFinite(value) || value < 0 || value > 1)) {
-      fail(directoryName, "answer.txt must contain normalized coordinates like 0.25, 0.70");
+      fail(directoryName, "pin.txt must contain normalized coordinates like 0.25, 0.70");
     }
   }
 }
