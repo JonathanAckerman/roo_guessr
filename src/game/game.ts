@@ -429,7 +429,11 @@ export function renderGame(
       const remainingTimeMs = timedOut ? 0 : Math.max(0, Math.min(roundDurationMs, deadline - Date.now()));
       const mapScore = guess ? scoreGuess(guess, location.answer) : 0;
       const timeBonus = guess
-        ? Math.round(MAX_TIME_BONUS * (remainingTimeMs / roundDurationMs))
+        ? Math.round(
+          MAX_TIME_BONUS
+          * (remainingTimeMs / roundDurationMs)
+          * (mapScore / MAX_MAP_SCORE),
+        )
         : 0;
       const roundTotal = mapScore + timeBonus;
       totalScore += roundTotal;
