@@ -15,7 +15,7 @@ I won't bore you with the details of how it works, only that the public website 
 
 ## Getting set up to take screenshots in Dota
 0) Open dota
-1) In settings search "console" and check `Enable console` and set a Console hotkey. You might need to set the `-console` launch option through steam, you can google it if need be.
+1) In settings search "console" and check `Enable console` and set a Console hotkey. You might need to set `-console` in the launch options through steam (you can google it if need be.)
 2) Click `Custom Lobby` and `+ Create`
 3) Click `Edit` in the bottom right
     - uncheck: `Fill Empty Slots With Bots`
@@ -63,7 +63,7 @@ Hold Shift           = camera moves faster
 4) Under `Answer image`, choose your context screenshot. This is what we show after they guess. Position its crop separately from the question crop.
 5) Left click on the map to choose where the answer pin will go (this is why you wrote down a reminder note for where it is).
 6) Click `Export ZIP` and save it to your folder from step 1. The button will only become available once both images and the answer pin are ready.
-7) Extract the ZIP. The resulting UUID folder should directly contain `question.webp`, `answer.webp`, and `pin.txt` (not another folder with the same UUID inside it).
+7) Extract the ZIP. The resulting UUID folder should contain `question.webp`, `answer.webp`, and `pin.txt`.
 
 ## Formatting and Submitting for approval
 This is the "hard part" if you are unfamiliar; just follow along and you should be fine.
@@ -72,16 +72,10 @@ This is the "hard part" if you are unfamiliar; just follow along and you should 
 2) Click the `src` folder
 3) Click the `locations` folder
 4) Click `Add file` in the top right then `Upload files`.
-5) Drag all the UUID folders you extracted into the box to upload (*Do not include the .zip files*). Each UUID folder should contain exactly `question.webp`, `answer.webp`, and `pin.txt`.
+5) Drag all the extracted UUID folders into the box to upload (*Do not include the .zip files*). Each UUID folder should contain `question.webp`, `answer.webp`, and `pin.txt`.
 6) Below that box you should see a `Commit changes` area. Click the radio button for `Create a new branch for this commit and start a pull request.` (You don't need to change anything else.)
 7) Click `Propose changes`.
-8) Before submitting, make sure the pull request shows:
-    - `base repository: JonathanAckerman/roo_guessr`
-    - `base: main`
-    - `head repository: <your-username>/roo_guessr`
-    - your newly created branch as the final selection
-9) Fill out the description and checklist, then click `Create pull request`.
-10) Click the `Files changed` tab and make sure it only contains the UUID folders you meant to submit. Each new location should contain the same three files listed above. If you see anything unrelated, leave a comment explaining it before I review the pull request.
+9) Click `Create pull request`.
 
 You're done! Now I review it and add it in. I know this is a bit of an...involved process but I hope this guide is straight-forward enough for you to have fun giving it a go. 
 

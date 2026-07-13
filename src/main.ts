@@ -82,6 +82,13 @@ function render(): void {
         </a>
         <div class="site-header__actions">
           <span class="location-count">${locations.length} ${locations.length === 1 ? "location" : "locations"}</span>
+          <a
+            class="tool-button"
+            href="https://x.com/pragma_pack"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Follow pragma_pack on X"
+          >X</a>
           <a class="tool-button" href="?tool=answers">Add your own</a>
         </div>
       </header>
